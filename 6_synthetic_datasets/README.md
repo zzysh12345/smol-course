@@ -1,3 +1,5 @@
 # Synthetic Datasets
 
-I'm still working on this section...
+## 1. Instruction Datasets
+
+## 2. Preference Datasets
