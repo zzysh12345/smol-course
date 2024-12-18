@@ -14,7 +14,7 @@ Synthetic data for smoll language models can be categorized into three taxonomie
 
 ### 1. [Instruction Datasets](./instruction_datasets.md)
 
-Learn how to generate instruction datasets for instruction tuning. We will explore creating instruction tuning datasets thorugh basic prompting and using prompts more refined techniques from papers. Instruction tuning datasets with seed data for in-context learning can be created through methods like SelfInstruct and Magpie. Additionally, we will explore instruction evolution through Evol-Instruct.
+Learn how to generate instruction datasets for instruction tuning. We will explore creating instruction tuning datasets thorugh basic prompting and using prompts more refined techniques from papers. Instruction tuning datasets with seed data for in-context learning can be created through methods like SelfInstruct and Magpie. Additionally, we will explore instruction evolution through EvolInstruct.
 
 ### 2. [Preference Datasets](./preference_datasets.md)
 
