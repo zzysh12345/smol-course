@@ -4,9 +4,7 @@ Within [the chapter on preference alignment](../2_preference_alignment/README.md
 
 ## Prompting for a Second Opinion
 
-Preference data is a dataset with multiple `completions`. We can add more `completions` to a dataset by prompting a model to generate them. When doing this we need to ensure that the second completion is not too similar to the first completion in terms overall quality and phrasing. This is important because the models needs to be optimised for a clear preference.
-
- Each `completion` is a response to a `prompt`, where we know which completion is preferred over the other, normally denoted as `chosen` and `rejected`. The score is a measure of how much one response is preferred over the other. In general these scores can be absolute, subjective, or relative. For this course we will focus on the first two, because they are most valuable for creating preference datasets.
+Preference data is a dataset with multiple `completions`. We can add more `completions` to a dataset by prompting a model to generate them. When doing this we need to ensure that the second completion is not too similar to the first completion in terms overall quality and phrasing. This is important because the models needs to be optimised for a clear preference. We want to know which completion is preferred over the other, normally referred to as `chosen` and `rejected`. The score is a measure of how much one response is preferred over the other. In general these scores can be absolute, subjective, or relative. For this course we will focus on the first two, because they are most valuable for creating preference datasets.
 
 ### Model pooling
 
@@ -38,13 +36,13 @@ if __name__ == "__main__":
 # ]}
 ```
 
-As you can see, we have two synthetic `completions` for the given `prompt`. We could have boosted diversity by initialising the `TextGeneration` steps with specific `system_prompt` or by passing generation arguments to the `TransformersLLM`. Since we are familiar with the concept of a pipeline, we will now park this
+As you can see, we have two synthetic `completions` for the given `prompt`. We could have boosted diversity by initialising the `TextGeneration` steps with specific `system_prompt` or by passing generation arguments to the `TransformersLLM`. Let's now see how we can improve the quality of the `completions` using EvolQuality.
 
 ### EvolQuality
 
 EvolQuality is similar to the [EvolInstruct](./instruction_datasets.md#evolinstruct)  a prompting technique but it evolves `completions` instead of the input `prompt`. The task takes both a `prompt` and `completion` and evolves the `completion` into a version that is better at responding to the `prompt` based on a set of criteria. This better version is defined according to a set of criteria by improving helpfulness, relevance, deepening, creativity, or details. Because this automatically generates a second completion, we can use it to add more `completions` to a dataset. In theory, we could even assume the evolution is better than the original completion and use it as the `chosen` completion out of the box.
 
- The prompt is [implemented in distilabel](https://github.com/argilla-io/distilabel/tree/main/src/distilabel/steps/tasks/evol_quality) and a simplified version is shown below:
+The prompt is [implemented in distilabel](https://github.com/argilla-io/distilabel/tree/main/src/distilabel/steps/tasks/evol_quality) and a simplified version is shown below:
 
 ```bash
 I want you act as a Response Rewriter.
@@ -61,7 +59,7 @@ Complicate the prompt based on the following criteria:
 # Improved Response
 ```
 
-To use it, we need to pass the `llm` to the [EvolQuality class](https://distilabel.argilla.io/dev/components-gallery/tasks/evolquality/). Let's use the synthetic `prompt` and `completion` from [the Model Pooling section](#model-pooling) as input and evolve it into a better version. For this example, we will only evolve for one generation.
+Let's use the [EvolQuality class](https://distilabel.argilla.io/dev/components-gallery/tasks/evolquality/) to evolve the synthetic `prompt` and `completion` from [the Model Pooling section](#model-pooling) into a better version. For this example, we will only evolve for one generation.
 
 ```python
 from distilabel.llms import TransformersLLM
@@ -85,6 +83,55 @@ The `response` is now more complex and specific to the `instruction`. This is a 
 
 ## Creating Scores
 
+Scores are a measure of how much one response is preferred over the other. In general these scores can be absolute, subjective, or relative. For this course we will focus on the first two, because they are most valuable for creating preference datasets. This scoring and is a way of judging with and evluating using language models and therefore has some overlap with the evaluation techniques we have seen in [the chapter on evaluation](../3_evaluation/README.md).
+
 ### UltraFeedback
 
+UltraFeedback is a technique that generates scores and critiques for a given `prompt` and its `completion`.
 
+The scores are based on the quality of the `completion` according to a set of criteria.  There are four fine-grained criteria: `helpfulness`, `relevance`, `deepening`, and `creativity`. These are useful but generally speaking, using the overall criteria is a good start, which allows us to simplify the process of generating scores. The scores can be used to determine which `completion` is the `chosen` and which is the `rejected` one. Because they are absolute, they can also be used as intersting filters for outliers in the dataset, either finding the worst completions or the pairs with more or less difference.
+
+The critiques are added as to provide a reasoning for the score. They can be used as extra context to help us understand the differences between the scores. The language model generates extensive critiques which is very useful but this also introduces extra cost and complexity to the process because generating critiques is more expensive than generating a single token to represent a score.
+
+
+The prompt is [implemented in distilabel](https://github.com/argilla-io/distilabel/tree/main/src/distilabel/steps/tasks/templates/ultrafeedback) and a simplified version is shown below:
+
+```bash
+Evaluate the model's outputs based on various criteria: Helpfulness, Relevance, Deepening, Creativity
+Your role is to provide a holistic assessment based on the above factors.
+Score the output from 1 to 5 on overall quality.
+
+# Input
+{{ input }}
+
+# Response
+{{ output }}
+
+# Score
+```
+
+Let's use the [UltraFeedback class](https://distilabel.argilla.io/dev/components-gallery/tasks/ultrafeedback/) to evaluate the synthetic `prompt` and `completion` from [the Model Pooling section](#model-pooling).
+
+```python
+from distilabel.llms import TransformersLLM
+from distilabel.steps.tasks import UltraFeedback
+
+llm = TransformersLLM(model="HuggingFaceTB/SmolLM2-1.7B-Instruct")
+ultrafeedback = UltraFeedback(llm=llm)
+ultrafeedback.load()
+
+instruction = "What is synthetic data?"
+completion_a = "Synthetic data is artificially generated data that mimics real-world usage."
+completion_b = "Synthetic data refers to data that has been generated artificially."
+
+next(ultrafeedback.process([{
+    "instruction": instruction,
+    "generations": [completion_a, completion_b]
+}]))
+# [
+#     {
+#         'ratings': [4, 5],
+#         'rationales': ['could have been more specific', 'good definition'],
+#     }
+# ]
+```
