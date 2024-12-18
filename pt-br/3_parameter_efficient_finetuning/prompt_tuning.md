@@ -1,22 +1,22 @@
-# Prompt Tuning
+# Ajuste de Prompts
 
-Prompt tuning is a parameter-efficient approach that modifies input representations rather than model weights. Unlike traditional fine-tuning that updates all model parameters, prompt tuning adds and optimizes a small set of trainable tokens while keeping the base model frozen.
+O ajuste de prompts (prompt tuning) é uma abordagem eficiente em termos de parâmetros que modifica as representações de entrada em vez dos pesos do modelo. Diferente do ajuste fino tradicional, que atualiza todos os parâmetros do modelo, o ajuste de prompts adiciona e otimiza um pequeno conjunto de tokens treináveis, mantendo o modelo base congelado.
 
-## Understanding Prompt Tuning
+## Entendendo o Ajuste de Prompts
 
-Prompt tuning is a parameter-efficient alternative to model fine-tuning that prepends trainable continuous vectors (soft prompts) to the input text. Unlike discrete text prompts, these soft prompts are learned through backpropagation while keeping the language model frozen. The method was introduced in ["The Power of Scale for Parameter-Efficient Prompt Tuning"](https://arxiv.org/abs/2104.08691) (Lester et al., 2021), which demonstrated that prompt tuning becomes more competitive with model fine-tuning as model size increases. Within the paper, at around 10 billion parameters, prompt tuning matches the performance of model fine-tuning while only modifying a few hundred parameters per task.
+O ajuste de prompts é uma alternativa eficiente ao ajuste fino de modelos que adiciona vetores contínuos treináveis (soft prompts) ao texto de entrada. Diferente dos prompts de texto discretos, esses soft prompts são aprendidos através de retropropagação enquanto o modelo de linguagem permanece congelado. O método foi introduzido em ["The Power of Scale for Parameter-Efficient Prompt Tuning"](https://arxiv.org/abs/2104.08691) (Lester et al., 2021), que demonstrou que o ajuste de prompts se torna mais competitivo em relação ao ajuste fino conforme o tamanho do modelo aumenta. No artigo, em torno de 10 bilhões de parâmetros, o ajuste de prompts iguala o desempenho do ajuste fino, modificando apenas algumas centenas de parâmetros por tarefa.
 
-These soft prompts are continuous vectors in the model's embedding space that get optimized during training. Unlike traditional discrete prompts that use natural language tokens, soft prompts have no inherent meaning but learn to elicit the desired behavior from the frozen model through gradient descent. The technique is particularly effective for multi-task scenarios since each task requires storing only a small prompt vector (typically a few hundred parameters) rather than a full model copy. This approach not only maintains a minimal memory footprint but also enables rapid task switching by simply swapping prompt vectors without any model reloading.
+Esses soft prompts são vetores contínuos no espaço de embedding do modelo que são otimizados durante o treinamento. Diferente dos prompts discretos tradicionais que usam tokens de linguagem natural, os soft prompts não possuem significado inerente, mas aprendem a evocar o comportamento desejado do modelo congelado por meio de gradiente descendente. A técnica é particularmente eficaz em cenários multitarefa, pois cada tarefa exige apenas o armazenamento de um pequeno vetor de prompt (normalmente algumas centenas de parâmetros) em vez de uma cópia completa do modelo. Essa abordagem não apenas mantém um uso mínimo de memória, mas também possibilita a troca rápida de tarefas apenas trocando os vetores de prompt sem precisar recarregar o modelo.
 
-## Training Process
+## Processo de Treinamento
 
-Soft prompts typically number between 8 and 32 tokens and can be initialized either randomly or from existing text. The initialization method plays a crucial role in the training process, with text-based initialization often performing better than random initialization.
+Os soft prompts geralmente têm entre 8 e 32 tokens e podem ser inicializados aleatoriamente ou a partir de texto existente. O método de inicialização desempenha um papel crucial no processo de treinamento, com inicializações baseadas em texto frequentemente apresentando melhor desempenho do que inicializações aleatórias.
 
-During training, only the prompt parameters are updated while the base model remains frozen. This focused approach uses standard training objectives but requires careful attention to the learning rate and gradient behavior of the prompt tokens.
+Durante o treinamento, apenas os parâmetros do prompt são atualizados, enquanto o modelo base permanece congelado. Essa abordagem focada utiliza objetivos de treinamento padrão, mas exige atenção cuidadosa à taxa de aprendizado e ao comportamento do gradiente dos tokens do prompt.
 
-## Implementation with PEFT
+## Implementação com PEFT
 
-The PEFT library makes implementing prompt tuning straightforward. Here's a basic example:
+O módulo PEFT facilita a implementação do ajuste de prompts. Aqui está um exemplo básico:
 
 ```python
 from peft import PromptTuningConfig, TaskType, get_peft_model
@@ -39,36 +39,36 @@ peft_config = PromptTuningConfig(
 model = get_peft_model(model, peft_config)
 ```
 
-## Comparison to Other Methods
+## Comparação com Outros Métodos
 
-When compared to other PEFT approaches, prompt tuning stands out for its efficiency. While LoRA offers low parameter counts and memory usage but requires loading adapters for task switching, prompt tuning achieves even lower resource usage and enables immediate task switching. Full fine-tuning, in contrast, demands significant resources and requires separate model copies for different tasks.
+Quando comparado a outras abordagens PEFT, o ajuste de prompts se destaca por sua eficiência. Enquanto o LoRA oferece baixo uso de parâmetros e memória, mas exige o carregamento de adaptadores para troca de tarefas, o ajuste de prompts atinge um uso de recursos ainda menor e possibilita a troca imediata de tarefas. O ajuste fino completo, em contraste, demanda recursos significativos e requer cópias separadas do modelo para diferentes tarefas.
 
-| Method | Parameters | Memory | Task Switching |
+| Método | Parâmetros | Memória | Troca de Tarefas |
 |--------|------------|---------|----------------|
-| Prompt Tuning | Very Low | Minimal | Easy |
-| LoRA | Low | Low | Requires Loading |
-| Full Fine-tuning | High | High | New Model Copy |
+| Ajuste de Prompts| Muito Baixo | Mínima | Fácil |
+| LoRA | Baixo | Baixa | Requer Carregamento |
+| Ajuste Fino | Alto | Alta | Nova Cópia do Modelo |
 
-When implementing prompt tuning, start with a small number of virtual tokens (8-16) and increase only if the task complexity demands it. Text initialization typically yields better results than random initialization, especially when using task-relevant text. The initialization strategy should reflect the complexity of your target task.
+Ao implementar o ajuste de prompts, comece com um pequeno número de tokens virtuais (8-16) e aumente apenas se a complexidade da tarefa exigir. A inicialização baseada em texto geralmente apresenta melhores resultados do que a inicialização aleatória, especialmente ao usar texto relevante para a tarefa. A estratégia de inicialização deve refletir a complexidade da tarefa alvo.
 
-Training requires slightly different considerations than full fine-tuning. Higher learning rates often work well, but careful monitoring of prompt token gradients is essential. Regular validation on diverse examples helps ensure robust performance across different scenarios.
+O treinamento requer considerações ligeiramente diferentes do ajuste fino completo. Taxas de aprendizado mais altas geralmente funcionam bem, mas o monitoramento cuidadoso dos gradientes dos tokens do prompt é essencial. A validação regular com exemplos diversos ajuda a garantir um desempenho robusto em diferentes cenários.
 
-## Application
+## Aplicação
 
-Prompt tuning excels in several scenarios:
+O ajuste de prompts se destaca em diversos cenários:
 
-1. Multi-task deployment
-2. Resource-constrained environments
-3. Rapid task adaptation
-4. Privacy-sensitive applications
+1. Implantação multitarefa
+2. Ambientes com restrição de recursos
+3. Adaptação rápida a tarefas
+4. Aplicações sensíveis à privacidade
 
-As models get smaller, prompt tuning becomes less competitive compared to full fine-tuning. For example, on models like SmolLM2 scales prompt tuning is less relevant than full fine-tuning. 
+Conforme os modelos ficam menores, o ajuste de prompts se torna menos competitivo em comparação ao ajuste fino completo. Por exemplo, em modelos como SmolLM2, o ajuste de prompts é menos relevante do que o ajuste fino completo. 
 
-## Next Steps
+## Próximos Passos
 
-⏭️ Move on to the [LoRA Adapters Tutorial](./notebooks/finetune_sft_peft.ipynb) to learn how to fine-tune a model with LoRA adapters.
+⏭️ Prossiga para o [Tutorial de Adaptadores LoRA](./notebooks/finetune_sft_peft.ipynb) para aprender como ajustar um modelo com adaptadores LoRA.
 
-## Resources
-- [PEFT Documentation](https://huggingface.co/docs/peft)
-- [Prompt Tuning Paper](https://arxiv.org/abs/2104.08691)
-- [Hugging Face Cookbook](https://huggingface.co/learn/cookbook/prompt_tuning_peft)
+## Referências
+- [Documentação PEFT](https://huggingface.co/docs/peft)
+- [Artigo sobre Ajuste de Prompts](https://arxiv.org/abs/2104.08691)
+- [Cookbook do Hugging Face](https://huggingface.co/learn/cookbook/prompt_tuning_peft)
