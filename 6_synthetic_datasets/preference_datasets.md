@@ -83,7 +83,7 @@ The `response` is now more complex and specific to the `instruction`. This is a 
 
 ## Creating Scores
 
-Scores are a measure of how much one response is preferred over the other. In general these scores can be absolute, subjective, or relative. For this course we will focus on the first two, because they are most valuable for creating preference datasets. This scoring and is a way of judging with and evluating using language models and therefore has some overlap with the evaluation techniques we have seen in [the chapter on evaluation](../3_evaluation/README.md).
+Scores are a measure of how much one response is preferred over the other. In general these scores can be absolute, subjective, or relative. For this course we will focus on the first two, because they are most valuable for creating preference datasets. This scoring and is a way of judging with and evluating using language models and therefore has some overlap with the evaluation techniques we have seen in [the chapter on evaluation](../3_evaluation/README.md). As with the other evaluation techniques, scores and evaluations normally require larger models to align better with human preferences.
 
 ### UltraFeedback
 
