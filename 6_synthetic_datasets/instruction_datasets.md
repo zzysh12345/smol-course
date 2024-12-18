@@ -69,7 +69,7 @@ The generated instruction is a lot better already and it fits our actual content
 
 ### EvolInstruct
 
-EvolInstruct is a prompting technique that takes an input instruction and evolves it into a better version of the same instruction. This better version is defined according to a set of criteria and adds constraints, deepening, concretizing, reasoning or complications to the original instruction. The process can be repeated multiple times to create various evolutions of the same instruction, ideally leading to a better version of the original instruction. The prompt is [implemented in distilabel](https://github.com/argilla-io/distilabel/blob/main/src/distilabel/steps/tasks/templates/evol-instruct.jinja2) and a simplified version is shown below:
+EvolInstruct is a prompting technique that takes an input instruction and evolves it into a better version of the same instruction. This better version is defined according to a set of criteria and adds constraints, deepening, concretizing, reasoning or complications to the original instruction. The process can be repeated multiple times to create various evolutions of the same instruction, ideally leading to a better version of the original instruction. The prompt is [implemented in distilabel](https://github.com/argilla-io/distilabel/tree/main/src/distilabel/steps/tasks/evol_instruct) and a simplified version is shown below:
 
 ```
 I want you act as a Prompt Rewriter.
@@ -184,4 +184,3 @@ Under the hood this pipeline has a lot of cool features. It automatically caches
 - [Self-instruct](https://arxiv.org/abs/2212.10560)
 - [Evol-Instruct](https://arxiv.org/abs/2304.12244)
 - [Magpie](https://arxiv.org/abs/2406.08464)
-
