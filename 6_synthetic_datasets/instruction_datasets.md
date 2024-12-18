@@ -1,8 +1,8 @@
 # Generating Instruction Datasets
 
-Within [the chapter on instruction tuning](../1_instruction_tuning/README.md) we learned how to create instruction datasets for instruction tuning. In this section we will explore how to generate instruction datasets for instruction tuning. We will explore creating instruction tuning datasets thorugh basic prompting and using prompts more refined techniques from papers. Instruction tuning datasets with seed data for in-context learning can be created through methods like SelfInstruct and Magpie. Additionally, we will explore instruction evolution through Evol-Instruct.
+Within [the chapter on instruction tuning](../1_instruction_tuning/README.md) we learned about instruction tuning. In this section we will explore how to generate instruction datasets for instruction tuning. We will explore creating instruction tuning datasets through basic prompting and using prompts more refined techniques from papers. Instruction tuning datasets with seed data for in-context learning can be created through methods like SelfInstruct and Magpie. Additionally, we will explore instruction evolution through Evol-Instruct.
 
-## Prompt to Data
+## From Prompt to Data
 
 Synthetic data sounds fancy, but it can be simplified as creating data through efficient prompting. You can think of this as a way to generate data for any task, however, the challenge is prompting efficiently while ensuring the data is diverse and of high enough quality for training. Luckily, there are many papers that have explored this problem and we will explore some of the useful ones during this course. First, things first, we will explore how to generate synthetic data through manual prompting.
 
@@ -139,7 +139,7 @@ To use it in distilabel, we need to pass the `llm` to the [Magpie class](https:/
 ```python
 from distilabel.steps.tasks import Magpie
 
-magpie = Magpie(llm=llm, num_generations=1)
+magpie = Magpie(llm=llm)
 magpie.load()
 
 next(magpie.process([{"system_prompt": "You are a helpful assistant."}]))
@@ -160,14 +160,14 @@ We immediately get a dataset with a `prompt` and `completion` . To improve the p
 - Ensure you have a diverse seed data to cover a wide range of scenarios
 - Regularly evaluate the dataset to ensure generated data is diverse and of high quality
 
+## Next Steps
+
+👨🏽‍💻 Code -[Exercise Notebook](./notebooks/instruction_sft_dataset.ipynb) to generate a dataset for instruction tuning
+🧑‍🏫 Learn - How to [generate preference datasets](./preference_datasets.md) for preference alignment
+
 ## References
 
 - [Self-instruct](https://arxiv.org/abs/2212.10560)
 - [Evol-Instruct](https://arxiv.org/abs/2304.12244)
 - [Magpie](https://arxiv.org/abs/2406.08464)
 
-## Exercise Notebooks
-
-| Title | Description | Exercise | Link | Colab |
-|-------|-------------|----------|------|-------|
-| Instruction Dataset | Generate a dataset for instruction tuning | 🐢 Generate an instruction tuning dataset <br> 🐕 Generate a dataset for instruction tuning with seed data <br> 🦁 Generate a dataset for instruction tuning with seed data and with instruction evolution | [Link](./notebooks/instruction_sft_dataset.ipynb) | [Colab](https://colab.research.google.com/drive/1234567890?usp=sharing) |
