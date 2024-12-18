@@ -1,6 +1,6 @@
 # Generating Instruction Datasets
 
-Within [the chapter on instruction tuning](../1_instruction_tuning/README.md) we learned about instruction tuning. In this section we will explore how to generate instruction datasets for instruction tuning. We will explore creating instruction tuning datasets through basic prompting and using prompts more refined techniques from papers. Instruction tuning datasets with seed data for in-context learning can be created through methods like SelfInstruct and Magpie. Additionally, we will explore instruction evolution through Evol-Instruct.
+Within [the chapter on instruction tuning](../1_instruction_tuning/README.md) we learned about instruction tuning. In this section we will explore how to generate instruction datasets for instruction tuning. We will explore creating instruction tuning datasets through basic prompting and using prompts more refined techniques from papers. Instruction tuning datasets with seed data for in-context learning can be created through methods like SelfInstruct and Magpie. Additionally, we will explore instruction evolution through Evol-Instruct. Lastly, we will explore how to generate a dataset for instruction tuning using a distilabel pipeline.
 
 ## From Prompt to Data
 
@@ -8,46 +8,30 @@ Synthetic data sounds fancy, but it can be simplified as creating data through e
 
 ### Basic Prompting
 
-Let's start with a basic example and load the [HuggingFaceTB/SmolLM2-360M-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct-GGUF?library=llama-cpp-python) model using the `transformers` integration of the `distilabel` library. Using this model, and some basic prompting we will create a synthetic `prompt` and use that to generate a `completion`.
+Let's start with a basic example and load the [HuggingFaceTB/SmolLM2-1.7B-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct) model using the `transformers` integration of the `distilabel` library. We will use the `TextGeneration` class to generate a synthetic `prompt` and use that to generate a `completion`.
 
 Next, we will load the model using the `distilabel` library.
 
 ```python
 from distilabel.llms import TransformersLLM
+from distilabel.steps.tasks import TextGeneration
 
 llm = TransformersLLM(model="HuggingFaceTB/SmolLM2-1.7B-Instruct")
-llm.load()
+gen = TextGeneration(llm=llm)
+gen.load()
 ```
 
 We will now use the `llm` to generate a `prompt` for instruction tuning.
 
-```Python
-llm.generate_outputs(
-    inputs=[
-        [
-            {
-                "role": "user",
-                "content": "Generate a questions about the Hugging Face Smol-Course on small AI models.",
-            }
-        ]
-    ]
-)
+```python
+next(gen.process([{"instruction": "Generate a questions about the Hugging Face Smol-Course on small AI models."}]))
 # What is the purpose of Smol-Course?
 ```
 
-Lastly, we can use that same `llm` and `prompt` to generate a `completion`.
+Lastly, we can use that same `prompt` as input to generate a `completion`.
 
-```Python
-llm.generate_outputs(
-    inputs=[
-        [
-            {
-                "role": "user",
-                "content": "What is the purpose of Smol-Course?",
-            }
-        ]
-    ]
-)
+```python
+next(gen.process([{"instruction": "What is the purpose of Smol-Course?"}]))
 # The Smol-Course is a platform designed to learning computer science concepts.
 ```
 
@@ -154,6 +138,36 @@ next(magpie.process([{"system_prompt": "You are a helpful assistant."}]))
 ```
 
 We immediately get a dataset with a `prompt` and `completion` . To improve the performance on our own domain, we can inject additional context into the `system_prompt`. This is then used in the  pre-query-prompt before we start generating the user prompt. Generally, language models are less optimized for passing additional context to the `system_prompt` so this does not always work as well for customisation as other techniques.
+
+### From Prompts to Pipelines
+
+The classes we've seen so far are all standalone classes that can be used in a pipeline. This is a good start, but we can do even better by using the `Pipeline` class to generate a dataset. We will use the `TextGeneration` step to generate a synthetic dataset for instruction tuning. The pipeline will consist of a `LoadDataFromDicts` step to load the data, a `TextGeneration` step to generate the `prompt` and a `completion` for that prompt. We will connect the steps and flow the data through the pipeline using the `>>` operator. Within the [documentation of distilabel](https://distilabel.argilla.io/dev/components-gallery/tasks/textgeneration/#input-output-columns) we can see input and output columns of the step. We to ensure that the data flow correctly through the pipeline, we will use the `output_mappings` parameter to map the output columns to the input columns of the next step.
+
+```python
+from distilabel.llms import TransformersLLM
+from distilabel.pipeline import Pipeline
+from distilabel.steps import LoadDataFromDicts
+from distilabel.steps.tasks import TextGeneration
+
+with Pipeline() as pipeline:
+    data = LoadDataFromDicts(data=[{"instruction": "Generate a short question about the Hugging Face Smol-Course."}])
+    llm = TransformersLLM(model="HuggingFaceTB/SmolLM2-1.7B-Instruct")
+    gen_a = TextGeneration(llm=llm, output_mappings={"generation": "instruction"})
+    gen_b = TextGeneration(llm=llm, output_mappings={"generation": "response"})
+    data >> gen_a >> gen_b
+
+if __name__ == "__main__":
+    distiset = pipeline.run(use_cache=False)
+    print(distiset["default"]["train"][0])
+# [{
+#   "instruction": "What is the purpose of Smol-Course?",
+#   "response": "The Smol-Course is a platform designed to learning computer science concepts."
+# }]
+```
+
+Under the hood this pipeline has a lot of cool features. It automatically caches generation results, so we can don't have to re-run the generation steps. There is included fault-tolerance, so if the generation steps fail, the pipeline will continue to run. And the pipeline exexutes all generation steps in parallel, so the generation is faster. We can even visualise the pipeline using the `draw` method. Here you can see how the data flows through the pipeline and how the `output_mappings` are used to map the output columns to the input columns of the next step.
+
+![Pipeline](./images/pipeline.png)
 
 ## Best Practices
 
