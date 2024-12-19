@@ -173,11 +173,12 @@ Under the hood this pipeline has a lot of cool features. It automatically caches
 
 - Ensure you have a diverse seed data to cover a wide range of scenarios
 - Regularly evaluate the dataset to ensure generated data is diverse and of high quality
+- Iterate on the (system)prompt to improve the quality of the data
 
 ## Next Steps
 
 👨🏽‍💻 Code -[Exercise Notebook](./notebooks/instruction_sft_dataset.ipynb) to generate a dataset for instruction tuning
-🧑‍🏫 Learn - How to [generate preference datasets](./preference_datasets.md) for preference alignment
+🧑‍🏫 Learn - About [generating preference datasets](./preference_datasets.md)
 
 ## References
 

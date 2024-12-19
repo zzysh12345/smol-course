@@ -135,3 +135,20 @@ next(ultrafeedback.process([{
 #     }
 # ]
 ```
+
+## Best Practices
+
+- Overall scores are cheaper and easier to generate than critiques and specific scores
+- Use bigger models to generate scores and critiques
+- Use a diverse set of models to generate scores and critiques
+- Iterate on configuration of the `system_prompt` and models
+
+## Next Steps
+
+👨🏽‍💻 Code -[Exercise Notebook](./notebooks/instruction_sft_dataset.ipynb) to generate a dataset for instruction tuning
+
+## References
+
+- [Self-instruct](https://arxiv.org/abs/2212.10560)
+- [Evol-Instruct](https://arxiv.org/abs/2304.12244)
+- [Magpie](https://arxiv.org/abs/2406.08464)
