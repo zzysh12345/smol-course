@@ -14,11 +14,11 @@ Synthetic data for smoll language models can be categorized into three taxonomie
 
 ### 1. [Instruction Datasets](./instruction_datasets.md)
 
-Learn how to generate instruction datasets for instruction tuning. We will explore creating instruction tuning datasets thorugh basic prompting and using prompts more refined techniques from papers. Instruction tuning datasets with seed data for in-context learning can be created through methods like SelfInstruct and Magpie. Additionally, we will explore instruction evolution through EvolInstruct.
+Learn how to generate instruction datasets for instruction tuning. We will explore creating instruction tuning datasets thorugh basic prompting and using prompts more refined techniques from papers. Instruction tuning datasets with seed data for in-context learning can be created through methods like SelfInstruct and Magpie. Additionally, we will explore instruction evolution through EvolInstruct. [Start learning](./instruction_datasets.md).
 
 ### 2. [Preference Datasets](./preference_datasets.md)
 
-Learn how to generate preference datasets for preference alignment. We will built on top of the methods and techniques introduced in the previous section. Using this as basis we will generate additional responses and learn how to improve such responses with the EvolQuality prompt. Lastly, we will explore how to evaluate responses with the UltraFeedback prompt which will produce a score and critique, allowing us to create preference pairs.
+Learn how to generate preference datasets for preference alignment. We will built on top of the methods and techniques introduced in the previous section. Using this as basis we will generate additional responses and learn how to improve such responses with the EvolQuality prompt. Lastly, we will explore how to evaluate responses with the UltraFeedback prompt which will produce a score and critique, allowing us to create preference pairs. [Start learning](./preference_datasets.md).
 
 ### Exercise Notebooks
 
