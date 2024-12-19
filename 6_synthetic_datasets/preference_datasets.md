@@ -101,13 +101,15 @@ Evaluate the model's outputs based on various criteria: Helpfulness, Relevance, 
 Your role is to provide a holistic assessment based on the above factors.
 Score the output from 1 to 5 on overall quality.
 
+Answer with the following format: score - rationale
+
 # Input
 {{ input }}
 
 # Response
 {{ output }}
 
-# Score
+# Score - Rationale
 ```
 
 Let's use the [UltraFeedback class](https://distilabel.argilla.io/dev/components-gallery/tasks/ultrafeedback/) to evaluate the synthetic `prompt` and `completion` from [the Model Pooling section](#model-pooling).
@@ -149,6 +151,6 @@ next(ultrafeedback.process([{
 
 ## References
 
-- [Self-instruct](https://arxiv.org/abs/2212.10560)
-- [Evol-Instruct](https://arxiv.org/abs/2304.12244)
-- [Magpie](https://arxiv.org/abs/2406.08464)
+- [Distilabel Documentation](https://distilabel.argilla.io/latest/)
+- [Deita](https://arxiv.org/abs/2312.15685)
+- [UltraFeedback](https://arxiv.org/abs/2310.01377)

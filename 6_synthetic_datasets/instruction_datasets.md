@@ -165,7 +165,7 @@ if __name__ == "__main__":
 # }]
 ```
 
-Under the hood this pipeline has a lot of cool features. It automatically caches generation results, so we can don't have to re-run the generation steps. There is included fault-tolerance, so if the generation steps fail, the pipeline will continue to run. And the pipeline exexutes all generation steps in parallel, so the generation is faster. We can even visualise the pipeline using the `draw` method. Here you can see how the data flows through the pipeline and how the `output_mappings` are used to map the output columns to the input columns of the next step.
+Under the hood, this pipeline has a lot of cool features. It automatically caches generation results, so we can don't have to re-run the generation steps. There is included fault-tolerance, so if the generation steps fail, the pipeline will continue to run. And the pipeline exexutes all generation steps in parallel, so the generation is faster. We can even visualise the pipeline using the `draw` method. Here you can see how the data flows through the pipeline and how the `output_mappings` are used to map the output columns to the input columns of the next step.
 
 ![Pipeline](./images/pipeline.png)
 
@@ -182,6 +182,7 @@ Under the hood this pipeline has a lot of cool features. It automatically caches
 
 ## References
 
+- [Distilabel Documentation](https://distilabel.argilla.io/latest/)
 - [Self-instruct](https://arxiv.org/abs/2212.10560)
 - [Evol-Instruct](https://arxiv.org/abs/2304.12244)
 - [Magpie](https://arxiv.org/abs/2406.08464)
