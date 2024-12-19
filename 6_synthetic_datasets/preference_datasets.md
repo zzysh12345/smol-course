@@ -1,16 +1,16 @@
 # Generating Preference Datasets
 
-Within [the chapter on preference alignment](../2_preference_alignment/README.md) we learned about preference alignment. In this section we will explore how to generate preference datasets for preference alignment. We will built on top of the methods that have been introduced in [generating instruction datasets](./instruction_datasets.md). On top of that, we will show how to add extra completions to the dataset using basic prompting or by using EvolQuality to improve the quality of responses. Lastly, we will show how UltraFeedback can be used to generate scores and critiques.
+Within [the chapter on preference alignment](../2_preference_alignment/README.md), we learned about preference alignment. In this section, we will explore how to generate preference datasets for preference alignment. We will build on top of the methods that were introduced in [generating instruction datasets](./instruction_datasets.md). Additionally, we will show how to add extra completions to the dataset using basic prompting or by using EvolQuality to improve the quality of responses. Lastly, we will show how UltraFeedback can be used to generate scores and critiques.
 
 ## Creating multiple completions
 
-Preference data is a dataset with multiple `completions`. We can add more `completions` to a dataset by prompting a model to generate them. When doing this we need to ensure that the second completion is not too similar to the first completion in terms overall quality and phrasing. This is important because the models needs to be optimised for a clear preference. We want to know which completion is preferred over the other, normally referred to as `chosen` and `rejected`. We will go into more detail about determining chosen and rejected completions in the [section on creating scores](#creating-scores).
+Preference data is a dataset with multiple `completions`. We can add more `completions` to a dataset by prompting a model to generate them. When doing this, we need to ensure that the second completion is not too similar to the first completion in terms of overall quality and phrasing. This is important because the model needs to be optimized for a clear preference. We want to know which completion is preferred over the other, normally referred to as `chosen` and `rejected`. We will go into more detail about determining chosen and rejected completions in the [section on creating scores](#creating-scores).
 
 ### Model pooling
 
-You can use models from different model-families to generate a second completion, which is called model pooling. To further improve the quality of the second completion, you can use using different generation arguments, like tweaking the `temperature`. Lastly, you can use different prompt templates or system prompts to generate a second completion with ensure diversity based on specific characteristics defined in the template. In theory, we could take two models of varying quality and use the better one as the `chosen` completion.
+You can use models from different model families to generate a second completion, which is called model pooling. To further improve the quality of the second completion, you can use different generation arguments, like tweaking the `temperature`. Lastly, you can use different prompt templates or system prompts to generate a second completion to ensure diversity based on specific characteristics defined in the template. In theory, we could take two models of varying quality and use the better one as the `chosen` completion.
 
-Let's start with model pooling by loading the [Qwen/Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct) and [HuggingFaceTB/SmolLM2-1.7B-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct) models using the `transformers` integration of the `distilabel` library. Using this model, we will create two synthetic `responses` for a given `prompt`. We will create another pipeline with `LoadDataFromDicts`, `TextGeneration`, and `GroupColumns`. We wil first load data, then use two generation steps, and then group the results. We connect the steps and flow the data through the pipeline using the `>>` operator and `[]`, which means that we want to use the output of the previous step as the input for both steps within the list.
+Let's start with model pooling by loading the [Qwen/Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct) and [HuggingFaceTB/SmolLM2-1.7B-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct) models using the `transformers` integration of the `distilabel` library. Using these models, we will create two synthetic `responses` for a given `prompt`. We will create another pipeline with `LoadDataFromDicts`, `TextGeneration`, and `GroupColumns`. We will first load data, then use two generation steps, and then group the results. We connect the steps and flow the data through the pipeline using the `>>` operator and `[]`, which means that we want to use the output of the previous step as the input for both steps within the list.
 
 ```python
 from distilabel.llms import TransformersLLM
@@ -36,11 +36,11 @@ if __name__ == "__main__":
 # ]}
 ```
 
-As you can see, we have two synthetic `completions` for the given `prompt`. We could have boosted diversity by initialising the `TextGeneration` steps with specific `system_prompt` or by passing generation arguments to the `TransformersLLM`. Let's now see how we can improve the quality of the `completions` using EvolQuality.
+As you can see, we have two synthetic `completions` for the given `prompt`. We could have boosted diversity by initializing the `TextGeneration` steps with a specific `system_prompt` or by passing generation arguments to the `TransformersLLM`. Let's now see how we can improve the quality of the `completions` using EvolQuality.
 
 ### EvolQuality
 
-EvolQuality is similar to the [EvolInstruct](./instruction_datasets.md#evolinstruct)  a prompting technique but it evolves `completions` instead of the input `prompt`. The task takes both a `prompt` and `completion` and evolves the `completion` into a version that is better at responding to the `prompt` based on a set of criteria. This better version is defined according to a set of criteria by improving helpfulness, relevance, deepening, creativity, or details. Because this automatically generates a second completion, we can use it to add more `completions` to a dataset. In theory, we could even assume the evolution is better than the original completion and use it as the `chosen` completion out of the box.
+EvolQuality is similar to [EvolInstruct](./instruction_datasets.md#evolinstruct) - it is a prompting technique but it evolves `completions` instead of the input `prompt`. The task takes both a `prompt` and `completion` and evolves the `completion` into a version that better responds to the `prompt` based on a set of criteria. This better version is defined according to criteria for improving helpfulness, relevance, deepening, creativity, or details. Because this automatically generates a second completion, we can use it to add more `completions` to a dataset. In theory, we could even assume the evolution is better than the original completion and use it as the `chosen` completion out of the box.
 
 The prompt is [implemented in distilabel](https://github.com/argilla-io/distilabel/tree/main/src/distilabel/steps/tasks/evol_quality) and a simplified version is shown below:
 
@@ -79,20 +79,19 @@ next(evol_quality.process([{
 # The process of generating synthetic data through manual prompting involves creating artificial data sets that mimic real-world usage patterns.
 ```
 
-The `response` is now more complex and specific to the `instruction`. This is a good start but as we have seen with EvolInstruct, evolved generations are not always better. Hence it is important to use additional evaluation techniques to ensure the quality of the dataset. We will explore this in the next section.
+The `response` is now more complex and specific to the `instruction`. This is a good start, but as we have seen with EvolInstruct, evolved generations are not always better. Hence, it is important to use additional evaluation techniques to ensure the quality of the dataset. We will explore this in the next section.
 
 ## Creating Scores
 
-Scores are a measure of how much one response is preferred over the other. In general these scores can be absolute, subjective, or relative. For this course we will focus on the first two, because they are most valuable for creating preference datasets. This scoring and is a way of judging with and evluating using language models and therefore has some overlap with the evaluation techniques we have seen in [the chapter on evaluation](../3_evaluation/README.md). As with the other evaluation techniques, scores and evaluations normally require larger models to align better with human preferences.
+Scores are a measure of how much one response is preferred over another. In general, these scores can be absolute, subjective, or relative. For this course, we will focus on the first two because they are most valuable for creating preference datasets. This scoring is a way of judging and evaluating using language models and therefore has some overlap with the evaluation techniques we have seen in [the chapter on evaluation](../3_evaluation/README.md). As with the other evaluation techniques, scores and evaluations normally require larger models to better align with human preferences.
 
 ### UltraFeedback
 
 UltraFeedback is a technique that generates scores and critiques for a given `prompt` and its `completion`.
 
-The scores are based on the quality of the `completion` according to a set of criteria.  There are four fine-grained criteria: `helpfulness`, `relevance`, `deepening`, and `creativity`. These are useful but generally speaking, using the overall criteria is a good start, which allows us to simplify the process of generating scores. The scores can be used to determine which `completion` is the `chosen` and which is the `rejected` one. Because they are absolute, they can also be used as intersting filters for outliers in the dataset, either finding the worst completions or the pairs with more or less difference.
+The scores are based on the quality of the `completion` according to a set of criteria. There are four fine-grained criteria: `helpfulness`, `relevance`, `deepening`, and `creativity`. These are useful but generally speaking, using the overall criteria is a good start, which allows us to simplify the process of generating scores. The scores can be used to determine which `completion` is the `chosen` and which is the `rejected` one. Because they are absolute, they can also be used as interesting filters for outliers in the dataset, either finding the worst completions or the pairs with more or less difference.
 
-The critiques are added as to provide a reasoning for the score. They can be used as extra context to help us understand the differences between the scores. The language model generates extensive critiques which is very useful but this also introduces extra cost and complexity to the process because generating critiques is more expensive than generating a single token to represent a score.
-
+The critiques are added to provide reasoning for the score. They can be used as extra context to help us understand the differences between the scores. The language model generates extensive critiques which is very useful, but this also introduces extra cost and complexity to the process because generating critiques is more expensive than generating a single token to represent a score.
 
 The prompt is [implemented in distilabel](https://github.com/argilla-io/distilabel/tree/main/src/distilabel/steps/tasks/templates/ultrafeedback) and a simplified version is shown below:
 
