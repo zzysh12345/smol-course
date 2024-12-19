@@ -24,8 +24,8 @@ Learn how to generate preference datasets for preference alignment. We will buil
 
 | Title | Description | Exercise | Link | Colab |
 |-------|-------------|----------|------|-------|
-| Instruction Dataset | Generate a dataset for instruction tuning | 🐢 Generate an instruction tuning dataset <br> 🐕 Generate a dataset for instruction tuning with seed data <br> 🦁 Generate a dataset for instruction tuning with seed data and with instruction evolution | [Link](./notebooks/instruction_sft_dataset.ipynb) | [Colab](https://colab.research.google.com/drive/1234567890?usp=sharing) |
-| Preference Dataset | Generate a dataset for preference alignment | 🐢 Generate a preference alignment dataset <br> 🐕 Generate a preference alignment dataset with response evolution <br> 🦁 Generate a preference alignment dataset with response evolution and critiques  | [Link](./notebooks/preference_alignment_dataset.ipynb) | [Colab](https://colab.research.google.com/drive/1234567890?usp=sharing) |
+| Instruction Dataset | Generate a dataset for instruction tuning | 🐢 Generate an instruction tuning dataset <br> 🐕 Generate a dataset for instruction tuning with seed data <br> 🦁 Generate a dataset for instruction tuning with seed data and with instruction evolution | [Link](./notebooks/instruction_sft_dataset.ipynb) | [Colab](https://githubtocolab.com/huggingface/smol-course/tree/main/6_synthetic_datasets/notebooks/instruction_sft_dataset.ipynb) |
+| Preference Dataset | Generate a dataset for preference alignment | 🐢 Generate a preference alignment dataset <br> 🐕 Generate a preference alignment dataset with response evolution <br> 🦁 Generate a preference alignment dataset with response evolution and critiques  | [Link](./notebooks/preference_alignment_dataset.ipynb) | [Colab](https://githubtocolab.com/huggingface/smol-course/tree/main/6_synthetic_datasets/notebooks/preference_alignment_dataset.ipynb) |
 
 ## Resources
 
