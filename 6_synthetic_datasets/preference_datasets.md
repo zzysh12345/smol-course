@@ -2,9 +2,9 @@
 
 Within [the chapter on preference alignment](../2_preference_alignment/README.md) we learned about preference alignment. In this section we will explore how to generate preference datasets for preference alignment. We will built on top of the methods that have been introduced in [generating instruction datasets](./instruction_datasets.md). On top of that, we will show how to add extra completions to the dataset using basic prompting or by using EvolQuality to improve the quality of responses. Lastly, we will show how UltraFeedback can be used to generate scores and critiques.
 
-## Prompting for a Second Opinion
+## Creating multiple completions
 
-Preference data is a dataset with multiple `completions`. We can add more `completions` to a dataset by prompting a model to generate them. When doing this we need to ensure that the second completion is not too similar to the first completion in terms overall quality and phrasing. This is important because the models needs to be optimised for a clear preference. We want to know which completion is preferred over the other, normally referred to as `chosen` and `rejected`. The score is a measure of how much one response is preferred over the other. In general these scores can be absolute, subjective, or relative. For this course we will focus on the first two, because they are most valuable for creating preference datasets.
+Preference data is a dataset with multiple `completions`. We can add more `completions` to a dataset by prompting a model to generate them. When doing this we need to ensure that the second completion is not too similar to the first completion in terms overall quality and phrasing. This is important because the models needs to be optimised for a clear preference. We want to know which completion is preferred over the other, normally referred to as `chosen` and `rejected`. We will go into more detail about determining chosen and rejected completions in the [section on creating scores](#creating-scores).
 
 ### Model pooling
 
