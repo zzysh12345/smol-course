@@ -6,7 +6,7 @@ We'll use [`distilabel`](https://distilabel.argilla.io/latest/), a framework for
 
 ## Module Overview
 
-Synthetic data for smoll language models can be categorized into three taxonomies: instructions, preferences and critiques. We will focus on the first two categories, which focus on the generation of dataseets for instruction tuning and preference alignment. During both categories, we will cover aspects of the third category, which focuses on improving existing data with model critiques and rewrites.
+Synthetic data for language models can be categorized into three taxonomies: instructions, preferences and critiques. We will focus on the first two categories, which focus on the generation of datasets for instruction tuning and preference alignment. In both categories, we will cover aspects of the third category, which focuses on improving existing data with model critiques and rewrites.
 
 ![Synthetic Data Taxonomies](./images/taxonomy-synthetic-data.png)
 
@@ -18,7 +18,7 @@ Learn how to generate instruction datasets for instruction tuning. We will explo
 
 ### 2. [Preference Datasets](./preference_datasets.md)
 
-Learn how to generate preference datasets for preference alignment. We will built on top of the methods and techniques introduced in the previous section. Using this as basis we will generate additional responses and learn how to improve such responses with the EvolQuality prompt. Lastly, we will explore how to evaluate responses with the UltraFeedback prompt which will produce a score and critique, allowing us to create preference pairs. [Start learning](./preference_datasets.md).
+Learn how to generate preference datasets for preference alignment. We will build on top of the methods and techniques introduced in section 1, by generating additional responses. Next, we will learn how to improve such responses with the EvolQuality prompt. Finally, we will explore how to evaluate responses with the the UltraFeedback prompt which will produce a score and critique, allowing us to create preference pairs. [Start learning](./preference_datasets.md).
 
 ### Exercise Notebooks
 
@@ -30,7 +30,7 @@ Learn how to generate preference datasets for preference alignment. We will buil
 ## Resources
 
 - [Distilabel Documentation](https://distilabel.argilla.io/latest/)
-- [Synthetic Data Generator](https://huggingface.co/blog/synthetic-data-generator)
+- [Synthetic Data Generator is UI app](https://huggingface.co/blog/synthetic-data-generator)
 - [SmolTalk](https://huggingface.co/datasets/HuggingFaceTB/smoltalk)
 - [Self-instruct](https://arxiv.org/abs/2212.10560)
 - [Evol-Instruct](https://arxiv.org/abs/2304.12244)
