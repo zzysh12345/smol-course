@@ -1,72 +1,72 @@
-# Domain Specific Evaluation with Argilla, Distilabel, and LightEval
+# Avaliação Específica de Domínio com Argilla, Distilabel e LightEval
 
-Most popular benchmarks look at very general capabilities (reasoning, math, code), but have you ever needed to study more specific capabilities? 
+Os benchmarks mais populares analisam capacidades muito gerais (raciocínio, matemática, código), mas você já precisou estudar sobre capacidades mais específicas? 
 
-What should you do if you need to evaluate a model on a **custom domain** relevant to your use-cases? (For example, financial, legal, medical use cases)  
+O que fazer se você precisar avaliar um modelo em um **domínio personalizado** relevante para seus casos de uso? (Por exemplo aplicações financeiras, jurídicas ou médicas)
 
-This tutorial shows you the full pipeline you can follow, from creating relevant data and annotating your samples to evaluating your model on them, with the easy to use [Argilla](https://github.com/argilla-io/argilla), [distilabel](https://github.com/argilla-io/distilabel), and [lighteval](https://github.com/huggingface/lighteval). For our example, we'll focus on generating exam questions from multiple documents. 
+Este tutorial mostra todo o pipeline que você pode seguir, desde a criação de dados relevantes e a anotação de suas amostras até a avaliação de seu modelo com elas, usando ferramentas como [Argilla](https://github.com/argilla-io/argilla), [distilabel](https://github.com/argilla-io/distilabel) e [lighteval](https://github.com/huggingface/lighteval). Para nosso exemplo, focaremos na geração de questões de exame a partir de múltiplos documentos.
 
-## Project Structure
+## Estrutura do Projeto
 
-For our process, we will follow 4 steps, with a script for each: generating a dataset, annotating it, extracting relevant samples for evaluation from it, and actually evaluating models.
+Para o nosso processo, seguiremos 4 etapas, com um script para cada uma: gerar um conjunto de dados, anotar dados, extrair amostras relevantes para avaliação e, finalmente, avaliar os modelos.
 
-| Script Name | Description |
+| Nome do Script | Descrição |
 |-------------|-------------|
-| generate_dataset.py | Generates exam questions from multiple text documents using a specified language model. |
-| annotate_dataset.py | Creates an Argilla dataset for manual annotation of the generated exam questions. |
-| create_dataset.py | Processes annotated data from Argilla and creates a Hugging Face dataset. |
-| evaluation_task.py | Defines a custom LightEval task for evaluating language models on the exam questions dataset. |
+| generate_dataset.py | Gera questões de exame a partir de múltiplos documentos de texto usando um modelo de linguagem especificado.. |
+| annotate_dataset.py | Cria um conjunto de dados no Argilla para anotação manual das questões geradas. |
+| create_dataset.py | Processa os dados anotados no Argilla e cria um conjunto de dados no Hugging Face. |
+| evaluation_task.py | Define uma tarefa personalizada no LightEval para avaliar modelos de linguagem no conjunto de questões de exame. |
 
-## Steps
+## Etapas
 
-### 1. Generate Dataset
+### 1. Gerar Conjunto de Dados
 
-The `generate_dataset.py` script uses the distilabel library to generate exam questions based on multiple text documents. It uses the specified model (default: Meta-Llama-3.1-8B-Instruct) to create questions, correct answers, and incrorect answers (known as distractors). You should add you own data samples and you might wish to use a different model.
+O script `generate_dataset.py` usa o módulo distilabel para gerar questões de exame com base em múltiplos documentos de texto. Ele utiliza o modelo especificado (padrão: Meta-Llama-3.1-8B-Instruct) para criar perguntas, respostas corretas e respostas incorretas (chamadas de distrações). Você deve adicionar seus próprios exemplos de dados e talvez até usar um modelo diferente.
 
-To run the generation:
+Para executar a geração:
 
 ```sh
 python generate_dataset.py --input_dir path/to/your/documents --model_id your_model_id --output_path output_directory
 ```
 
-This will create a [Distiset](https://distilabel.argilla.io/dev/sections/how_to_guides/advanced/distiset/) containing the generated exam questions for all documents in the input directory. 
+Isso criará um [Distiset](https://distilabel.argilla.io/dev/sections/how_to_guides/advanced/distiset/) contendo as questões de exame geradas para todos os documentos no diretório de entrada.
 
-### 2. Annotate Dataset
+### 2. Anotar Conjunto de Dados
 
-The `annotate_dataset.py` script takes the generated questions and creates an Argilla dataset for annotation. It sets up the dataset structure and populates it with the generated questions and answers, randomizing the order of answers to avoid bias. Once in Argilla, you or a domain expert can validate the dataset with the correct answers.
+O script `annotate_dataset.py` utiliza as questões geradas e cria um conjunto de dados no Argilla para anotação. Ele configura a estrutura do conjunto de dados e o popula com as perguntas e respostas geradas, randomizando a ordem das respostas para evitar vieses (biases). No Argilla, você ou um especialista no domínio pode validar o conjunto de dados com as respostas corretas.
 
-You will see suggested correct answers from the LLM in random order and you can approve the correct answer or select a different one. The duration of this process will depend on the scale of your evaluation dataset, the complexity of your domain data, and the quality of your LLM. For example, we were able to create 150 samples within 1 hour on the domain of transfer learning, using Llama-3.1-70B-Instruct, mostly by approving the correct answer and discarding the incorrect ones.
+Você verá as respostas corretas sugeridas pelo LLM em ordem aleatória e poderá aprovar a resposta correta ou selecionar outra. A duração desse processo dependerá da escala do seu conjunto de avaliação, da complexidade dos dados do domínio e da qualidade do seu LLM. Por exemplo, fomos capazes de criar 150 amostras em 1 hora no domínio de transferência de aprendizado, usando o Llama-3.1-70B-Instruct, aprovando principalmente as respostas corretas e descartando as incorretas
 
-To run the annotation process:
+Para executar o processo de anotação:
 
 ```sh
 python annotate_dataset.py --dataset_path path/to/distiset --output_dataset_name argilla_dataset_name
 ```
 
-This will create an Argilla dataset that can be used for manual review and annotation.
+Isso criará um conjunto de dados no Argilla que pode ser usado para revisão e anotação manual.
 
 ![argilla_dataset](./images/domain_eval_argilla_view.png)
 
-If you're not using Argilla, deploy it locally or on spaces following this [quickstart guide](https://docs.argilla.io/latest/getting_started/quickstart/).
+Se você não estiver usando o Argilla, implante-o localmente ou no Spaces seguindo este [guia de início rápido](https://docs.argilla.io/latest/getting_started/quickstart/).
 
-### 3. Create Dataset
+### 3. Criar Conjunto de Dados
 
-The `create_dataset.py` script processes the annotated data from Argilla and creates a Hugging Face dataset. It handles both suggested and manually annotated answers. The script will create a dataset with the question, possible answers, and the column name for the correct answer. To create the final dataset:
+O script `create_dataset.py` processa os dados anotados no Argilla e cria um conjunto de dados no Hugging Face. Ele manipula tanto as respostas sugeridas quanto as anotadas manualmente. O script criará um conjunto de dados contendo a pergunta, as possíveis respostas e o nome da coluna para a resposta correta. Para criar o conjunto de dados final:
 
 ```sh
 huggingface_hub login
 python create_dataset.py --dataset_path argilla_dataset_name --dataset_repo_id your_hf_repo_id
 ```
 
-This will push the dataset to the Hugging Face Hub under the specified repository. You can view the sample dataset on the hub [here](https://huggingface.co/datasets/burtenshaw/exam_questions/viewer/default/train), and a preview of the dataset looks like this:
+Isso enviará o conjunto de dados para o Hugging Face Hub sob o repositório especificado. Você pode visualizar o conjunto de dados de exemplo no hub [aqui](https://huggingface.co/datasets/burtenshaw/exam_questions/viewer/default/train), e uma pré-visualização do conjunto de dados se parece com isto:
 
 ![hf_dataset](./images/domain_eval_dataset_viewer.png)
 
-### 4. Evaluation Task
+### 4. Tarefa de Avaliação
 
-The `evaluation_task.py` script defines a custom LightEval task for evaluating language models on the exam questions dataset. It includes a prompt function, a custom accuracy metric, and the task configuration. 
+O script `evaluation_task.py` define uma tarefa personalizada no LightEval para avaliar modelos de linguagem no conjunto de questões de exame. Ele inclui uma função de prompt, uma métrica de precisão personalizada e a configuração da tarefa. 
 
-To evaluate a model using lighteval with the custom exam questions task:
+Para avaliar um modelo usando o lighteval com a tarefa personalizada de questões de exame:
 
 ```sh
 lighteval accelerate \
@@ -76,10 +76,10 @@ lighteval accelerate \
     --output_dir "./evals"
 ```
 
-You can find detailed guides in lighteval wiki about each of these steps: 
+Você pode encontrar guias detalhados no wiki do lighteval sobre cada uma dessas etapas: 
 
-- [Creating a Custom Task](https://github.com/huggingface/lighteval/wiki/Adding-a-Custom-Task)
-- [Creating a Custom Metric](https://github.com/huggingface/lighteval/wiki/Adding-a-New-Metric)
-- [Using existing metrics](https://github.com/huggingface/lighteval/wiki/Metric-List)
+- [Criando uma Tarefa Personalizada](https://github.com/huggingface/lighteval/wiki/Adding-a-Custom-Task)
+- [Criando uma Métrica Personalizada](https://github.com/huggingface/lighteval/wiki/Adding-a-New-Metric)
+- [Usando Métricas Existentes](https://github.com/huggingface/lighteval/wiki/Metric-List)
 
 
