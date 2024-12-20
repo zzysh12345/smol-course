@@ -21,6 +21,9 @@ gen = TextGeneration(llm=llm)
 gen.load()
 ```
 
+!!! note
+    Distilabel loads the `llm` into memory, so, when working in a notebook, we need to `gen.unload()` after we are done with it to avoid memory issues.
+
 We will now use the `llm` to generate a `prompt` for instruction tuning.
 
 ```python
@@ -137,7 +140,20 @@ next(magpie.process([{"system_prompt": "You are a helpful assistant."}]))
 # }]
 ```
 
-We immediately get a dataset with a `prompt` and `completion` . To improve the performance on our own domain, we can inject additional context into the `system_prompt`. This is then used in the  pre-query-prompt before we start generating the user prompt. Generally, language models are less optimized for passing additional context to the `system_prompt` so this does not always work as well for customisation as other techniques.
+
+We immediately get a dataset with a `prompt` and `completion` . To improve the performance on our own domain, we can inject additional context into the `system_prompt`. For the LLM to generate specific domain data in combination with Magpie, it helps describing in the system prompt what the users queries will be. This is then used in the  pre-query-prompt before we start generating the user prompt and bias the LLM to generate user queries of that domain.
+
+```
+You're an AI assistant that will help users solving math problems.
+```
+
+It's important to write the system prompt as shown above instead of something like:
+
+```
+You're an AI assistant that generates math problems
+```
+
+Generally, language models are less optimized for passing additional context to the `system_prompt` so this does not always work as well for customisation as other techniques.
 
 ### From Prompts to Pipelines
 

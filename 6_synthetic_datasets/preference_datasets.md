@@ -146,7 +146,7 @@ next(ultrafeedback.process([{
 
 ## Next Steps
 
-👨🏽‍💻 Code -[Exercise Notebook](./notebooks/instruction_sft_dataset.ipynb) to generate a dataset for instruction tuning
+👨🏽‍💻 Code -[Exercise Notebook](./notebooks/preference_dpo_dataset.ipynb) to generate a dataset for instruction tuning
 
 ## References
 
