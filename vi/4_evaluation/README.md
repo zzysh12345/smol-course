@@ -24,7 +24,7 @@ Theo dõi một ví dụ hoàn chỉnh về việc xây dựng quy trình đánh
 
 | Tiêu đề | Mô tả | Bài tập | Link | Colab |
 |---------|-------|---------|------|-------|
-| Đánh giá và phân tích mô hình LLM của bạn | Học cách sử dụng LightEval để đánh giá và so sánh các mô hình trên các lĩnh vực cụ thể | 🐢 Sử dụng các tác vụ trong lĩnh vực y tế để đánh giá mô hình <br> 🐕 Tạo đánh giá lĩnh vực mới với các tác vụ MMLU khác nhau <br> 🦁 Tạo tác vụ đánh giá tùy chỉnh cho lĩnh vực của bạn | [Notebook](./notebooks/lighteval_evaluate_and_analyse_your_LLM.ipynb) | <a target="_blank" href="https://colab.research.google.com/github/huggingface/smol-course/blob/main/4_evaluation/notebooks/lighteval_evaluate_and_analyse_your_LLM.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> |
+| Đánh giá và phân tích mô hình LLM của bạn | Học cách sử dụng `LightEval` để đánh giá và so sánh các mô hình trên các lĩnh vực cụ thể | 🐢 Sử dụng các tác vụ trong **lĩnh vực y tế** để đánh giá mô hình <br> 🐕 Tạo đánh giá lĩnh vực mới với các tác vụ MMLU khác nhau <br> 🦁 Tạo tác vụ đánh giá cho lĩnh vực của bạn | [Notebook](./notebooks/lighteval_evaluate_and_analyse_your_LLM.ipynb) | <a target="_blank" href="https://colab.research.google.com/github/huggingface/smol-course/blob/main/4_evaluation/notebooks/lighteval_evaluate_and_analyse_your_LLM.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> |
 
 ## Tài liệu tham khảo
 
@@ -32,6 +32,6 @@ Theo dõi một ví dụ hoàn chỉnh về việc xây dựng quy trình đánh
 - [Tài liệu LightEval](https://github.com/huggingface/lighteval) - Tài liệu chính thức cho thư viện LightEval 
 - [Tài liệu Argilla](https://docs.argilla.io) - Tìm hiểu về nền tảng gán nhãn Argilla
 - [Paper MMLU](https://arxiv.org/abs/2009.03300) - Paper mô tả benchmark MMLU
-- [Tạo tác vụ tùy chỉnh](https://github.com/huggingface/lighteval/wiki/Adding-a-Custom-Task)
-- [Tạo số liệu tùy chỉnh](https://github.com/huggingface/lighteval/wiki/Adding-a-New-Metric)
+- [Tạo tác vụ theo yêu cầu](https://github.com/huggingface/lighteval/wiki/Adding-a-Custom-Task)
+- [Tạo tiêu chuẩn đánh giá theo yêu cầu](https://github.com/huggingface/lighteval/wiki/Adding-a-New-Metric)
 - [Sử dụng số liệu có sẵn](https://github.com/huggingface/lighteval/wiki/Metric-List)
