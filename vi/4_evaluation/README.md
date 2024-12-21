@@ -26,7 +26,7 @@ Theo dõi một ví dụ hoàn chỉnh về việc xây dựng quy trình đánh
 |---------|-------|---------|------|-------|
 | Đánh giá và phân tích mô hình LLM của bạn | Học cách sử dụng LightEval để đánh giá và so sánh các mô hình trên các lĩnh vực cụ thể | 🐢 Sử dụng các tác vụ trong lĩnh vực y tế để đánh giá mô hình <br> 🐕 Tạo đánh giá lĩnh vực mới với các tác vụ MMLU khác nhau <br> 🦁 Tạo tác vụ đánh giá tùy chỉnh cho lĩnh vực của bạn | [Notebook](./notebooks/lighteval_evaluate_and_analyse_your_LLM.ipynb) | <a target="_blank" href="https://colab.research.google.com/github/huggingface/smol-course/blob/main/4_evaluation/notebooks/lighteval_evaluate_and_analyse_your_LLM.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> |
 
-## Tài nguyên
+## Tài liệu tham khảo
 
 - [Hướng dẫn đánh giá](https://github.com/huggingface/evaluation-guidebook) - Hướng dẫn toàn diện về đánh giá LLM
 - [Tài liệu LightEval](https://github.com/huggingface/lighteval) - Tài liệu chính thức cho thư viện LightEval 

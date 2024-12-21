@@ -88,7 +88,7 @@ Nếu dùng **Google Colab** bạn sẽ cần cài đặt dependencies một cá
 pip install -r transformers trl datasets huggingface_hub
 ```
 
-## Tham gia
+## Tham gia và chia sẻ
 
 Hãy chia sẻ khoá học này, để cùng nhau phát triển cộng đồng AI Việt Nam.
 
