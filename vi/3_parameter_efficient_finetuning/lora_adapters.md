@@ -117,7 +117,7 @@ tokenizer.save_pretrained("path/to/save/merged_model")
 ⏩ Chuyển sang [Hướng dẫn Prompt Tuning](prompt_tuning.md) để tìm hiểu cách tinh chỉnh một mô hình bằng prompt tuning.
 ⏩ Chuyển sang [Hướng dẫn lắp LoRA Adapters](./notebooks/load_lora_adapter.ipynb) để tìm hiểu cách lắp LoRA adapters.
 
-# Tài nguyên
+# Tài liệu tham khảo
 
 - [LORA: LOW-RANK ADAPTATION OF LARGE LANGUAGE MODELS](https://arxiv.org/pdf/2106.09685)
 - [Tài liệu PEFT](https://huggingface.co/docs/peft)

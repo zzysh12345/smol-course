@@ -28,7 +28,7 @@ Prompt tuning cung cấp cách tiếp cận **thậm chí nhẹ hơn** bằng c�
 | Tinh chỉnh LoRA | Học cách tinh chỉnh mô hình sử dụng LoRA adapters | 🐢 Huấn luyện mô hình sử dụng LoRA<br>🐕 Thử nghiệm với các giá trị rank khác nhau<br>🦁 So sánh hiệu suất với tinh chỉnh đầy đủ | [Notebook](./notebooks/finetune_sft_peft.ipynb) | <a target="_blank" href="https://colab.research.google.com/github/huggingface/smol-course/blob/main/3_parameter_efficient_finetuning/notebooks/finetune_sft_peft.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> |
 | Tải LoRA Adapters | Học cách tải và sử dụng LoRA adapters đã huấn luyện | 🐢 Tải adapters đã huấn luyện trước<br>🐕 Gộp adapters với mô hình cơ sở<br>🦁 Chuyển đổi giữa nhiều adapters | [Notebook](./notebooks/load_lora_adapter.ipynb) | <a target="_blank" href="https://colab.research.google.com/github/huggingface/smol-course/blob/main/3_parameter_efficient_finetuning/notebooks/load_lora_adapter.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> |
 
-## Tài nguyên
+## Tài liệu tham khảo
 - [Tài liệu PEFT](https://huggingface.co/docs/peft)
 - [Bài báo nghiên cứu LoRA](https://arxiv.org/abs/2106.09685)
 - [Bài báo nghiên cứu QLoRA](https://arxiv.org/abs/2305.14314)

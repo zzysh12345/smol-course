@@ -70,7 +70,7 @@ Khi mô hình nhỏ hơn, prompt tuning trở nên kém cạnh tranh hơn so v�
 
 ⏭️ Chuyển sang [Hướng dẫn LoRA Adapters](./notebooks/finetune_sft_peft.ipynb) để tìm hiểu cách tinh chỉnh một mô hình với LoRA adapters.
 
-## Tài nguyên
+## Tài liệu tham khảo
 - [Tài liệu về thư viện PEFT](https://huggingface.co/docs/peft)
 - [Bài báo nghiên cứu về Prompt Tuning](https://arxiv.org/abs/2104.08691) 
 - [Hướng dẫn thực hành của Hugging Face](https://huggingface.co/learn/cookbook/prompt_tuning_peft)
