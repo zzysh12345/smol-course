@@ -1,16 +1,16 @@
-# Custom Domain Evaluation
+# Đánh Giá Theo Lĩnh Vực Cụ Thể
 
-While standard benchmarks provide valuable insights, many applications require specialized evaluation approaches tailored to specific domains or use cases. This guide will help you create custom evaluation pipelines that accurately assess your model's performance in your target domain.
+Mặc dù các phương pháp đánh giá tiêu chuẩn (`benchmark`) cung cấp những thông tin chuyên sâu có giá trị, nhiều ứng dụng đòi hỏi các phương pháp đánh giá chuyên biệt phù hợp với các lĩnh vực hoặc trường hợp sử dụng cụ thể. Bài học này sẽ giúp bạn tạo các quy trình (`pipeline`) tùy chỉnh các phương pháp đánh giá để có cái nhìn chính xác hơn về hiệu suất của mô hình trong lĩnh vực cụ thể của bạn.
 
-## Designing Your Evaluation Strategy
+## Thiết kế chiến lược đánh giá của bạn
 
-A successful custom evaluation strategy starts with clear objectives. Consider what specific capabilities your model needs to demonstrate in your domain. This might include technical knowledge, reasoning patterns, or domain-specific formats. Document these requirements carefully - they'll guide both your task design and metric selection.
+Một chiến lược đánh giá tùy chỉnh đầy đủ bắt đầu với các mục tiêu rõ ràng. Hãy xem xét những khả năng cụ thể mà mô hình của bạn cần thể hiện trong lĩnh vực của bạn. Điều này có thể bao gồm kiến thức kỹ thuật, các mẫu suy luận hoặc các định dạng đặc thù cho lĩnh vực đó. Ghi lại cẩn thận các yêu cầu này - chúng sẽ hướng dẫn cả việc thiết kế tác vụ (`task`) và lựa chọn các chỉ số (`metric`).
 
-Your evaluation should test both standard use cases and edge cases. For example, in a medical domain, you might evaluate both common diagnostic scenarios and rare conditions. In financial applications, you might test both routine transactions and complex edge cases involving multiple currencies or special conditions.
+Việc đánh giá của bạn nên kiểm tra cả các trường hợp sử dụng tiêu chuẩn và các trường hợp biên (`edge case`). Ví dụ, trong lĩnh vực y tế, bạn có thể đánh giá cả các kịch bản chẩn đoán phổ biến và các tình trạng hiếm gặp. Trong các ứng dụng tài chính, bạn có thể kiểm tra cả các giao dịch thông thường và các trường hợp biên phức tạp liên quan đến nhiều loại tiền tệ hoặc các điều kiện đặc biệt.
 
-## Implementation with LightEval
+## Triển khai với LightEval
 
-LightEval provides a flexible framework for implementing custom evaluations. Here's how to create a custom task:
+`LightEval` cung cấp một khung (`framework`) linh hoạt để triển khai các đánh giá tùy chỉnh. Đây là cách để tạo một tác vụ (`task`) tùy chỉnh:
 
 ```python
 from lighteval.tasks import Task, Doc
@@ -21,62 +21,63 @@ class CustomEvalTask(Task):
         super().__init__(
             name="custom_task",
             version="0.0.1",
-            metrics=["accuracy", "f1"],  # Your chosen metrics
-            description="Description of your custom evaluation task"
+            metrics=["accuracy", "f1"],  # Các chỉ số bạn chọn
+            description="Mô tả tác vụ đánh giá tùy chỉnh của bạn"
         )
     
     def get_prompt(self, sample):
-        # Format your input into a prompt
+        # Định dạng đầu vào của bạn thành một lời nhắc (prompt)
         return f"Question: {sample['question']}\nAnswer:"
     
     def process_response(self, response, ref):
-        # Process model output and compare to reference
+        # Xử lý đầu ra của mô hình và so sánh với tham chiếu
         return response.strip() == ref.strip()
 ```
 
-## Custom Metrics
 
-Domain-specific tasks often require specialized metrics. LightEval provides a flexible framework for creating custom metrics that capture domain-relevant aspects of performance:
+## Các chỉ số (`metric`) tùy chỉnh
+
+Các tác vụ theo lĩnh vực cụ thể thường yêu cầu các chỉ số chuyên biệt. `LightEval` cung cấp một khung linh hoạt để tạo các chỉ số tùy chỉnh nắm bắt các khía cạnh liên quan đến lĩnh vực của hiệu suất:
 
 ```python
 from aenum import extend_enum
 from lighteval.metrics import Metrics, SampleLevelMetric, SampleLevelMetricGrouping
 import numpy as np
 
-# Define a sample-level metric function
+# Định nghĩa một hàm chỉ số mức mẫu (sample-level metric)
 def custom_metric(predictions: list[str], formatted_doc: Doc, **kwargs) -> dict:
-    """Example metric that returns multiple scores per sample"""
+    """Chỉ số ví dụ trả về nhiều điểm số cho mỗi mẫu"""
     response = predictions[0]
     return {
         "accuracy": response == formatted_doc.choices[formatted_doc.gold_index],
         "length_match": len(response) == len(formatted_doc.reference)
     }
 
-# Create a metric that returns multiple values per sample
+# Tạo một chỉ số trả về nhiều giá trị cho mỗi mẫu
 custom_metric_group = SampleLevelMetricGrouping(
-    metric_name=["accuracy", "length_match"],  # Names of sub-metrics
-    higher_is_better={  # Whether higher values are better for each metric
+    metric_name=["accuracy", "length_match"],  # Tên của các chỉ số
+    higher_is_better={  # Liệu giá trị cao hơn có tốt hơn cho mỗi chỉ số không
         "accuracy": True,
         "length_match": True
     },
     category=MetricCategory.CUSTOM,
     use_case=MetricUseCase.SCORING,
     sample_level_fn=custom_metric,
-    corpus_level_fn={  # How to aggregate each metric
+    corpus_level_fn={  # Cách tổng hợp từng chỉ số
         "accuracy": np.mean,
         "length_match": np.mean
     }
 )
 
-# Register the metric with LightEval
+# Đăng ký chỉ số vào LightEval
 extend_enum(Metrics, "custom_metric_name", custom_metric_group)
 ```
 
-For simpler cases where you only need one metric value per sample:
+Đối với các trường hợp đơn giản hơn, nơi bạn chỉ cần một giá trị chỉ số cho mỗi mẫu:
 
 ```python
 def simple_metric(predictions: list[str], formatted_doc: Doc, **kwargs) -> bool:
-    """Example metric that returns a single score per sample"""
+    """Chỉ số ví dụ trả về một điểm duy nhất cho mỗi mẫu"""
     response = predictions[0]
     return response == formatted_doc.choices[formatted_doc.gold_index]
 
@@ -86,47 +87,47 @@ simple_metric_obj = SampleLevelMetric(
     category=MetricCategory.CUSTOM,
     use_case=MetricUseCase.SCORING,
     sample_level_fn=simple_metric,
-    corpus_level_fn=np.mean  # How to aggregate across samples
+    corpus_level_fn=np.mean  # Cách tổng hợp trên các mẫu
 )
 
 extend_enum(Metrics, "simple_metric", simple_metric_obj)
 ```
 
-You can then use your custom metrics in your evaluation tasks by referencing them in the task configuration. The metrics will be automatically computed across all samples and aggregated according to your specified functions.
+Sau đó, bạn có thể sử dụng các chỉ số tùy chỉnh của mình trong các tác vụ đánh giá bằng cách tham chiếu chúng trong cấu hình tác vụ. Các chỉ số sẽ được tự động tính toán trên tất cả các mẫu và tổng hợp theo các hàm bạn đã chỉ định.
 
-For more complex metrics, consider:
-- Using metadata in your formatted documents to weight or adjust scores
-- Implementing custom aggregation functions for corpus-level statistics
-- Adding validation checks for your metric inputs
-- Documenting edge cases and expected behavior
+Đối với các chỉ số phức tạp hơn, hãy xem xét:
+- Sử dụng siêu dữ liệu (`metadata`) trong các tài liệu được định dạng của bạn để đánh trọng số hoặc điều chỉnh điểm số
+- Triển khai các hàm tổng hợp tùy chỉnh cho các thống kê cấp độ kho ngữ liệu (`corpus-level`)
+- Thêm kiểm tra xác thực cho đầu vào chỉ số của bạn
+- Ghi lại các trường hợp biên và hành vi mong đợi
 
-For a complete example of custom metrics in action, see our [domain evaluation project](./project/README.md).
+Để có một ví dụ đầy đủ về các chỉ số tùy chỉnh trong thực tế, hãy xem [dự án đánh giá theo lĩnh vực](./project/README.md) của chúng tôi.
 
-## Dataset Creation
+## Tạo tập dữ liệu
 
-High-quality evaluation requires carefully curated datasets. Consider these approaches for dataset creation:
+Đánh giá chất lượng cao đòi hỏi các tập dữ liệu được sắp xếp cẩn thận. Hãy xem xét các phương pháp sau để tạo tập dữ liệu:
 
-1. Expert Annotation: Work with domain experts to create and validate evaluation examples. Tools like [Argilla](https://github.com/argilla-io/argilla) make this process more efficient.
+1. Chú thích của chuyên gia: Làm việc với các chuyên gia trong lĩnh vực để tạo và xác thực các ví dụ đánh giá. Các công cụ như [Argilla](https://github.com/argilla-io/argilla) làm cho quá trình này hiệu quả hơn.
 
-2. Real-World Data: Collect and anonymize real usage data, ensuring it represents actual deployment scenarios.
+2. Dữ liệu thế giới thực: Thu thập và ẩn danh hóa dữ liệu sử dụng thực tế, đảm bảo nó đại diện cho các kịch bản triển khai thực tế.
 
-3. Synthetic Generation: Use LLMs to generate initial examples, then have experts validate and refine them.
+3. Tạo tổng hợp: Sử dụng `LLM` để tạo các ví dụ ban đầu, sau đó để các chuyên gia xác thực và tinh chỉnh chúng.
 
-## Best Practices
+## Các phương pháp tốt nhất
 
-- Document your evaluation methodology thoroughly, including any assumptions or limitations
-- Include diverse test cases that cover different aspects of your domain
-- Consider both automated metrics and human evaluation where appropriate
-- Version control your evaluation datasets and code
-- Regularly update your evaluation suite as you discover new edge cases or requirements
+- Ghi lại phương pháp đánh giá của bạn một cách kỹ lưỡng, bao gồm mọi giả định hoặc hạn chế
+- Bao gồm các trường hợp kiểm thử đa dạng bao gồm các khía cạnh khác nhau trong lĩnh vực của bạn
+- Xem xét cả các chỉ số tự động và đánh giá thủ công khi thích hợp
+- Kiểm soát phiên bản (`Version control`) các tập dữ liệu và mã đánh giá của bạn
+- Thường xuyên cập nhật bộ đánh giá của bạn khi bạn phát hiện ra các trường hợp biên hoặc yêu cầu mới
 
-## References
+## Tài liệu tham khảo
 
-- [LightEval Custom Task Guide](https://github.com/huggingface/lighteval/wiki/Adding-a-Custom-Task)
-- [LightEval Custom Metrics](https://github.com/huggingface/lighteval/wiki/Adding-a-New-Metric)
-- [Argilla Documentation](https://docs.argilla.io) for dataset annotation
-- [Evaluation Guidebook](https://github.com/huggingface/evaluation-guidebook) for general evaluation principles
+- [Hướng dẫn tác vụ tùy chỉnh LightEval](https://github.com/huggingface/lighteval/wiki/Adding-a-Custom-Task)
+- [Chỉ số tùy chỉnh LightEval](https://github.com/huggingface/lighteval/wiki/Adding-a-New-Metric)
+- [Tài liệu Argilla](https://docs.argilla.io) để chú thích tập dữ liệu
+- [Hướng dẫn đánh giá](https://github.com/huggingface/evaluation-guidebook) cho các nguyên tắc đánh giá chung
 
-# Next Steps
+# Các bước tiếp theo
 
-⏩ For a complete example of implementing these concepts, see our [domain evaluation project](./project/README.md).
+⏩ Để có một ví dụ đầy đủ về việc triển khai các khái niệm này, hãy xem [dự án đánh giá theo lĩnh vực](./project/README.md) của chúng tôi.
