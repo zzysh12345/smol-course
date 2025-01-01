@@ -1,72 +1,72 @@
-# Domain Specific Evaluation with Argilla, Distilabel, and LightEval
+# Đánh Giá Theo Lĩnh Vực Cụ Thể với Argilla, Distilabel, và LightEval
 
-Most popular benchmarks look at very general capabilities (reasoning, math, code), but have you ever needed to study more specific capabilities? 
+Hầu hết các bộ tiêu chuẩn (`benchmark`) phổ biến đều xem xét các khả năng rất chung chung (lý luận, toán học, lập trình), nhưng bạn đã bao giờ cần nghiên cứu các khả năng cụ thể hơn chưa?
 
-What should you do if you need to evaluate a model on a **custom domain** relevant to your use-cases? (For example, financial, legal, medical use cases)  
+Bạn nên làm gì nếu bạn cần đánh giá một mô hình trên một **lĩnh vực cụ thể** liên quan đến các trường hợp sử dụng của bạn? (Ví dụ: các trường hợp sử dụng tài chính, pháp lý, y tế)
 
-This tutorial shows you the full pipeline you can follow, from creating relevant data and annotating your samples to evaluating your model on them, with the easy to use [Argilla](https://github.com/argilla-io/argilla), [distilabel](https://github.com/argilla-io/distilabel), and [lighteval](https://github.com/huggingface/lighteval). For our example, we'll focus on generating exam questions from multiple documents. 
+Hướng dẫn này chỉ cho bạn toàn bộ quy trình (`pipeline`) mà bạn có thể làm theo, từ việc tạo dữ liệu liên quan và chú thích các mẫu của bạn đến việc đánh giá mô hình của bạn trên chúng, với các công cụ dễ sử dụng [Argilla](https://github.com/argilla-io/argilla), [distilabel](https://github.com/argilla-io/distilabel), và [lighteval](https://github.com/huggingface/lighteval). Trong ví dụ của chúng tôi, chúng tôi sẽ tập trung vào việc tạo các câu hỏi đánh giá từ nhiều tài liệu.
 
-## Project Structure
+## Cấu trúc dự án
 
-For our process, we will follow 4 steps, with a script for each: generating a dataset, annotating it, extracting relevant samples for evaluation from it, and actually evaluating models.
+Đối với quy trình của chúng tôi, chúng tôi sẽ làm theo 4 bước, với một tập lệnh cho mỗi bước: tạo tập dữ liệu, chú thích nó, trích xuất các mẫu liên quan để đánh giá từ nó và thực sự đánh giá các mô hình.
 
-| Script Name | Description |
+| Tên tập lệnh | Mô tả |
 |-------------|-------------|
-| generate_dataset.py | Generates exam questions from multiple text documents using a specified language model. |
-| annotate_dataset.py | Creates an Argilla dataset for manual annotation of the generated exam questions. |
-| create_dataset.py | Processes annotated data from Argilla and creates a Hugging Face dataset. |
-| evaluation_task.py | Defines a custom LightEval task for evaluating language models on the exam questions dataset. |
+| generate_dataset.py | Tạo các câu hỏi đánh giá từ nhiều tài liệu văn bản bằng cách sử dụng một mô hình ngôn ngữ được chỉ định. |
+| annotate_dataset.py | Tạo tập dữ liệu Argilla để chú thích thủ công các câu hỏi đánh giá được tạo. |
+| create_dataset.py | Xử lý dữ liệu đã chú thích từ Argilla và tạo tập dữ liệu Hugging Face. |
+| evaluation_task.py | Định nghĩa một tác vụ LightEval tùy chỉnh để đánh giá các mô hình ngôn ngữ trên tập dữ liệu câu hỏi đánh giá. |
 
-## Steps
+## Các bước thực hành
 
-### 1. Generate Dataset
+### 1. Tạo tập dữ liệu
 
-The `generate_dataset.py` script uses the distilabel library to generate exam questions based on multiple text documents. It uses the specified model (default: Meta-Llama-3.1-8B-Instruct) to create questions, correct answers, and incrorect answers (known as distractors). You should add you own data samples and you might wish to use a different model.
+Tập lệnh `generate_dataset.py` sử dụng thư viện `distilabel` để tạo các câu hỏi thi dựa trên nhiều tài liệu văn bản. Nó sử dụng mô hình được chỉ định (mặc định: Meta-Llama-3.1-8B-Instruct) để tạo các câu hỏi, câu trả lời đúng và câu trả lời sai (được gọi là câu gây nhiễu). Bạn nên thêm các mẫu dữ liệu của riêng bạn và bạn có thể muốn sử dụng một mô hình khác.
 
-To run the generation:
+Để chạy quá trình tạo:
 
 ```sh
 python generate_dataset.py --input_dir path/to/your/documents --model_id your_model_id --output_path output_directory
 ```
 
-This will create a [Distiset](https://distilabel.argilla.io/dev/sections/how_to_guides/advanced/distiset/) containing the generated exam questions for all documents in the input directory. 
+Thao tác này sẽ tạo một [Distiset](https://distilabel.argilla.io/dev/sections/how_to_guides/advanced/distiset/) chứa các câu hỏi thi được tạo cho tất cả các tài liệu trong thư mục đầu vào.
 
-### 2. Annotate Dataset
+### 2. Chú thích tập dữ liệu
 
-The `annotate_dataset.py` script takes the generated questions and creates an Argilla dataset for annotation. It sets up the dataset structure and populates it with the generated questions and answers, randomizing the order of answers to avoid bias. Once in Argilla, you or a domain expert can validate the dataset with the correct answers.
+Tập lệnh `annotate_dataset.py` lấy các câu hỏi đã tạo và tạo tập dữ liệu Argilla để chú thích. Nó thiết lập cấu trúc tập dữ liệu và điền vào đó các câu hỏi và câu trả lời đã tạo, sắp xếp ngẫu nhiên thứ tự các câu trả lời để tránh sai lệch. Khi ở trong Argilla, bạn hoặc một chuyên gia trong lĩnh vực có thể xác thực tập dữ liệu với các câu trả lời đúng.
 
-You will see suggested correct answers from the LLM in random order and you can approve the correct answer or select a different one. The duration of this process will depend on the scale of your evaluation dataset, the complexity of your domain data, and the quality of your LLM. For example, we were able to create 150 samples within 1 hour on the domain of transfer learning, using Llama-3.1-70B-Instruct, mostly by approving the correct answer and discarding the incorrect ones.
+Bạn sẽ thấy các câu trả lời đúng được đề xuất từ `LLM` theo thứ tự ngẫu nhiên và bạn có thể phê duyệt câu trả lời đúng hoặc chọn một câu trả lời khác. Thời gian của quá trình này sẽ phụ thuộc vào quy mô của tập dữ liệu đánh giá của bạn, độ phức tạp của dữ liệu lĩnh vực của bạn và chất lượng của `LLM` của bạn. Ví dụ: chúng tôi đã có thể tạo 150 mẫu trong vòng 1 giờ trên lĩnh vực chuyển giao học tập (`transfer learning`), sử dụng Llama-3.1-70B-Instruct, chủ yếu bằng cách phê duyệt câu trả lời đúng và loại bỏ những câu trả lời không chính xác.
 
-To run the annotation process:
+Để chạy quá trình chú thích:
 
 ```sh
 python annotate_dataset.py --dataset_path path/to/distiset --output_dataset_name argilla_dataset_name
 ```
 
-This will create an Argilla dataset that can be used for manual review and annotation.
+Thao tác này sẽ tạo một tập dữ liệu Argilla có thể được sử dụng để xem xét và chú thích thủ công.
 
 ![argilla_dataset](./images/domain_eval_argilla_view.png)
 
-If you're not using Argilla, deploy it locally or on spaces following this [quickstart guide](https://docs.argilla.io/latest/getting_started/quickstart/).
+Nếu bạn không sử dụng Argilla, hãy triển khai cục bộ hoặc trên không gian (`spaces`) theo [hướng dẫn bắt đầu nhanh](https://docs.argilla.io/latest/getting_started/quickstart/) này.
 
-### 3. Create Dataset
+### 3. Tạo tập dữ liệu
 
-The `create_dataset.py` script processes the annotated data from Argilla and creates a Hugging Face dataset. It handles both suggested and manually annotated answers. The script will create a dataset with the question, possible answers, and the column name for the correct answer. To create the final dataset:
+Tập lệnh `create_dataset.py` xử lý dữ liệu đã chú thích từ Argilla và tạo tập dữ liệu Hugging Face. Nó xử lý cả các câu trả lời được đề xuất và được chú thích thủ công. Tập lệnh sẽ tạo một tập dữ liệu với câu hỏi, các câu trả lời có thể và tên cột cho câu trả lời đúng. Để tạo tập dữ liệu cuối cùng:
 
 ```sh
 huggingface_hub login
 python create_dataset.py --dataset_path argilla_dataset_name --dataset_repo_id your_hf_repo_id
 ```
 
-This will push the dataset to the Hugging Face Hub under the specified repository. You can view the sample dataset on the hub [here](https://huggingface.co/datasets/burtenshaw/exam_questions/viewer/default/train), and a preview of the dataset looks like this:
+Thao tác này sẽ đẩy tập dữ liệu lên Hugging Face Hub dưới kho lưu trữ được chỉ định. Bạn có thể xem tập dữ liệu mẫu trên `hub` [tại đây](https://huggingface.co/datasets/burtenshaw/exam_questions/viewer/default/train) và bản xem trước của tập dữ liệu trông như thế này:
 
 ![hf_dataset](./images/domain_eval_dataset_viewer.png)
 
-### 4. Evaluation Task
+### 4. Tác vụ đánh giá
 
-The `evaluation_task.py` script defines a custom LightEval task for evaluating language models on the exam questions dataset. It includes a prompt function, a custom accuracy metric, and the task configuration. 
+Tập lệnh `evaluation_task.py` định nghĩa một tác vụ LightEval tùy chỉnh để đánh giá các mô hình ngôn ngữ trên tập dữ liệu câu hỏi thi. Nó bao gồm một hàm nhắc nhở (`prompt function`), một chỉ số chính xác tùy chỉnh và cấu hình tác vụ.
 
-To evaluate a model using lighteval with the custom exam questions task:
+Để đánh giá một mô hình bằng `lighteval` với tác vụ câu hỏi thi tùy chỉnh:
 
 ```sh
 lighteval accelerate \
@@ -76,10 +76,8 @@ lighteval accelerate \
     --output_dir "./evals"
 ```
 
-You can find detailed guides in lighteval wiki about each of these steps: 
+Bạn có thể tìm thấy các hướng dẫn chi tiết trong `lighteval wiki` về từng bước sau:
 
-- [Creating a Custom Task](https://github.com/huggingface/lighteval/wiki/Adding-a-Custom-Task)
-- [Creating a Custom Metric](https://github.com/huggingface/lighteval/wiki/Adding-a-New-Metric)
-- [Using existing metrics](https://github.com/huggingface/lighteval/wiki/Metric-List)
-
-
+- [Tạo tác vụ tùy chỉnh](https://github.com/huggingface/lighteval/wiki/Adding-a-Custom-Task)
+- [Tạo chỉ số tùy chỉnh](https://github.com/huggingface/lighteval/wiki/Adding-a-New-Metric)
+- [Sử dụng các chỉ số hiện có](https://github.com/huggingface/lighteval/wiki/Metric-List)
