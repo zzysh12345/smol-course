@@ -4,7 +4,7 @@ AI Agents are autonomous systems that can understand user requests, break them d
 
 ## Module Overview
 
-Building effective agents requires understanding three key components. First, retrieval capabilities allow agents to access and use relevant information from various sources. Second, function calling enables agents to take concrete actions in their environment. Finally, domain-specific knowledge and tooling equips agents for specialized tasks like code manipulation.
+Building effective agents requires understanding three key components. First, retrieval capabilities allow agents to access and use relevant information from various sources. Second, function calling enables agents to take concrete actions in their environment. Finally, domain-specific knowledge and tooling equip agents for specialized tasks like code manipulation.
 
 ## Contents
 
