@@ -28,7 +28,7 @@ Custom function agents extend basic AI capabilities through specialized function
 
 ## Resources
 
-- [SmoLAgents Documentation](https://huggingface.co/docs/smolagents) - Official docs for the SmoLAgents library
+- [smolagents Documentation](https://huggingface.co/docs/smolagents) - Official docs for the smolagents library
 - [Building Effective Agents](https://www.anthropic.com/research/building-effective-agents) - Research paper on agent architectures
 - [Agent Guidelines](https://huggingface.co/docs/smolagents/tutorials/building_good_agents) - Best practices for building reliable agents
 - [LangChain Agents](https://python.langchain.com/docs/how_to/#agents) - Additional examples of agent implementations
