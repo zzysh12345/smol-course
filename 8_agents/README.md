@@ -24,7 +24,7 @@ Custom function agents extend basic AI capabilities through specialized function
 
 | Title | Description | Exercise | Link | Colab |
 |-------|-------------|----------|------|-------|
-| Building a Research Agent | Create an agent that can perform research tasks using retrieval and custom functions | 🐢 Build a simple RAG agent <br> 🐕 Add custom search functions <br> 🦁 Create a full research assistant | [Notebook](./notebooks/agents.ipynb) | <a target="_blank" href="https://colab.research.google.com/github/huggingface/smol-course/blob/main/8_agents/notebooks/building_research_agent.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> |
+| Building a Research Agent | Create an agent that can perform research tasks using retrieval and custom functions | 🐢 Build a simple RAG agent <br> 🐕 Add custom search functions <br> 🦁 Create a full research assistant | [Notebook](./notebooks/agents.ipynb) | <a target="_blank" href="https://colab.research.google.com/github/huggingface/smol-course/blob/main/8_agents/notebooks/agents.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> |
 
 ## Resources
 
