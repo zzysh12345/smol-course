@@ -1,4 +1,4 @@
-![smolcourse image](./banner.png)
+![smolcourse image](../banner.png)
 
 # スモールコース
 
