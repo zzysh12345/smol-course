@@ -71,6 +71,7 @@ generator = pipeline(
 ```
 
 ### Generation Parameters
+
 ```python
 response = generator(
     "Translate this to French:",
@@ -112,13 +113,14 @@ for prompt, response in zip(prompts, responses):
 
 ## Web Server Integration
 
-Here's how to integrate a pipeline into a Flask application:
+Here's how to integrate a pipeline into a FastAPI application:
 
 ```python
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, HTTPException
 from transformers import pipeline
+import uvicorn
 
-app = Flask(__name__)
+app = FastAPI()
 
 # Initialize pipeline globally
 generator = pipeline(
@@ -127,17 +129,12 @@ generator = pipeline(
     device_map="auto"
 )
 
-@app.route("/generate", methods=["POST"])
-def generate_text():
+@app.post("/generate")
+async def generate_text(prompt: str):
     try:
-        data = request.json
-        prompt = data.get("prompt", "")
-        
-        # Input validation
         if not prompt:
-            return jsonify({"error": "No prompt provided"}), 400
+            raise HTTPException(status_code=400, detail="No prompt provided")
             
-        # Generate response with timeout
         response = generator(
             prompt,
             max_new_tokens=100,
@@ -145,15 +142,13 @@ def generate_text():
             temperature=0.7
         )
         
-        return jsonify({
-            "generated_text": response[0]['generated_text']
-        })
+        return {"generated_text": response[0]['generated_text']}
         
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    uvicorn.run(app, host="0.0.0.0", port=5000)
 ```
 
 ## Limitations

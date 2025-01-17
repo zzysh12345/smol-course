@@ -10,7 +10,6 @@ Text Generation Inference addresses the key challenges of deploying large langua
 - **Continuous Batching**: The continuous batching system maximizes GPU utilization by dynamically processing requests, while optimizations like Flash Attention and Paged Attention significantly reduce memory usage and increase speed.
 - **Token Streaming**: Real-time applications benefit from token streaming via Server-Sent Events, delivering responses with minimal latency.
 
-
 ## How to Use Text Generation Inference
 
 ### Basic Python Usage
