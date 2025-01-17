@@ -1,58 +1,58 @@
-# Visual Language Models
+# Mô hình Ngôn ngữ Thị giác (Visual Language Models)
 
-Visual Language Models (VLMs) bridge the gap between images and text, enabling advanced tasks like generating image captions, answering questions based on visuals, or understanding the relationship between textual and visual data. Their architecture is designed to process both modalities seamlessly.
+Mô hình Ngôn ngữ Thị giác (VLMs) thu hẹp khoảng cách giữa hình ảnh và văn bản, cho phép thực hiện các tác vụ nâng cao như tạo chú thích cho ảnh, trả lời câu hỏi dựa trên hình ảnh hoặc hiểu mối quan hệ giữa dữ liệu văn bản và hình ảnh. Kiến trúc của chúng được thiết kế để xử lý liền mạch cả hai phương thức.
 
-### Architecture
+### Kiến trúc
 
-VLMs combine image-processing components with text-generation models to achieve a unified understanding. The primary elements of their architecture are:
+VLMs kết hợp các thành phần xử lý hình ảnh với các mô hình sinh văn bản để đạt được sự hiểu biết thống nhất. Các yếu tố chính trong kiến trúc của chúng là:
 
-![VLM Architecture](./images/VLM_Architecture.png)
+![Kiến trúc VLM](./images/VLM_Architecture.png)
 
-- **Image Encoder**: Transforms raw images into compact numerical representations. Pretrained encoders such as CLIP or vision transformers (ViT) are commonly used.
-- **Embedding Projector**: Maps image features into a space compatible with textual embeddings, often using dense layers or linear transformations.
-- **Text Decoder**: Acts as the language-generation component, translating fused multimodal information into coherent text. Examples include generative models like Llama or Vicuna.
-- **Multimodal Projector**: Provides an additional layer to blend image and text representations. It is critical for models like LLaVA to establish stronger connections between the two modalities.
+- **Bộ mã hóa hình ảnh (Image Encoder)**: Biến đổi hình ảnh thô thành các biểu diễn số học nhỏ gọn. Các bộ mã hóa được huấn luyện trước như CLIP hoặc vision transformers (ViT) thường được sử dụng.
+- **Bộ chiếu nhúng (Embedding Projector)**: Ánh xạ các đặc trưng của hình ảnh vào không gian tương thích với các phép nhúng văn bản, thường sử dụng các lớp dày đặc (dense layers) hoặc các phép biến đổi tuyến tính.
+- **Bộ giải mã văn bản (Text Decoder)**: Hoạt động như thành phần sinh ngôn ngữ, chuyển thông tin đa phương thức đã hợp nhất thành văn bản mạch lạc. Ví dụ bao gồm các mô hình sinh (generative models) như Llama hoặc Vicuna.
+- **Bộ chiếu đa phương thức (Multimodal Projector)**: Cung cấp một lớp bổ sung để trộn lẫn các biểu diễn hình ảnh và văn bản. Nó rất quan trọng đối với các mô hình như LLaVA để thiết lập các kết nối mạnh mẽ hơn giữa hai phương thức.
 
-Most VLMs leverage pretrained image encoders and text decoders and align them through additional fine-tuning on paired image-text datasets. This approach makes training efficient while allowing the models to generalize effectively.
+Hầu hết các VLMs tận dụng các bộ mã hóa hình ảnh và bộ giải mã văn bản đã được huấn luyện trước và căn chỉnh chúng thông qua việc tinh chỉnh bổ sung trên các tập dữ liệu hình ảnh-văn bản được ghép nối. Cách tiếp cận này giúp việc huấn luyện hiệu quả đồng thời cho phép các mô hình khái quát hóa một cách hiệu quả.
 
-### Usage
+### Cách sử dụng
 
-![VLM Process](./images/VLM_Process.png)
+![Quy trình VLM](./images/VLM_Process.png)
 
-VLMs are applied to a range of multimodal tasks. Their adaptability allows them to perform in diverse domains with varying levels of fine-tuning:
+VLMs được áp dụng cho một loạt các tác vụ đa phương thức. Khả năng thích ứng của chúng cho phép chúng hoạt động trong các lĩnh vực đa dạng với các mức độ tinh chỉnh khác nhau:
 
-- **Image Captioning**: Generating descriptions for images.
-- **Visual Question Answering (VQA)**: Answering questions about the content of an image.
-- **Cross-Modal Retrieval**: Finding corresponding text for a given image or vice versa.
-- **Creative Applications**: Assisting in design, art generation, or creating engaging multimedia content.
+- **Chú thích hình ảnh (Image Captioning)**: Tạo mô tả cho hình ảnh.
+- **Trả lời câu hỏi bằng hình ảnh (Visual Question Answering - VQA)**: Trả lời câu hỏi về nội dung của hình ảnh.
+- **Truy xuất đa phương thức (Cross-Modal Retrieval)**: Tìm văn bản tương ứng cho một hình ảnh nhất định hoặc ngược lại.
+- **Ứng dụng sáng tạo (Creative Applications)**: Hỗ trợ thiết kế, tạo tác phẩm nghệ thuật hoặc tạo nội dung đa phương tiện hấp dẫn.
 
-![VLM Usage](./images/VLM_Usage.png)
+![Sử dụng VLM](./images/VLM_Usage.png)
 
-Training and fine-tuning VLMs depend on high-quality datasets that pair images with text annotations. Tools like Hugging Face's `transformers` library provide convenient access to pretrained VLMs and streamlined workflows for custom fine-tuning.
+Việc huấn luyện và tinh chỉnh VLMs phụ thuộc vào các tập dữ liệu chất lượng cao ghép nối hình ảnh với chú thích văn bản. Các công cụ như thư viện `transformers` của Hugging Face cung cấp quyền truy cập thuận tiện vào các VLMs đã được huấn luyện trước và quy trình làm việc được sắp xếp hợp lý để tinh chỉnh tùy chỉnh.
 
-### Chat Format
+### Định dạng trò chuyện (Chat Format)
 
-Many VLMs are structured to interact in a chatbot-like manner, enhancing usability. This format includes:
+Nhiều VLMs được cấu trúc để tương tác theo kiểu chatbot, nâng cao khả năng sử dụng. Định dạng này bao gồm:
 
-- A **system message** that sets the role or context for the model, such as "You are an assistant analyzing visual data."
-- **User queries** that combine text inputs and associated images.
-- **Assistant responses** that provide text outputs derived from the multimodal analysis.
+- Một **câu lệnh hệ thống (system message)** đặt vai trò hoặc ngữ cảnh cho mô hình, chẳng hạn như "Bạn là trợ lý phân tích dữ liệu hình ảnh."
+- **Truy vấn của người dùng (user queries)** kết hợp đầu vào văn bản và hình ảnh liên quan.
+- **Phản hồi của trợ lý (assistant responses)** cung cấp đầu ra văn bản bắt nguồn từ phân tích đa phương thức.
 
-This conversational structure is intuitive and aligns with user expectations, especially for interactive applications like customer service or educational tools.
+Cấu trúc hội thoại này trực quan và phù hợp với mong đợi của người dùng, đặc biệt là đối với các ứng dụng tương tác như dịch vụ khách hàng hoặc các công cụ giáo dục.
 
-Here’s an example of how a formatted input might look:
+Dưới đây là ví dụ về cách hiển thị đầu vào được định dạng:
 
 ```json
 [
     {
         "role": "system",
-        "content": [{"type": "text", "text": "You are a Vision Language Model specialized in interpreting visual data from chart images..."}]
+        "content": [{"type": "text", "text": "Bạn là một Mô hình Ngôn ngữ Thị giác chuyên giải thích dữ liệu hình ảnh từ hình ảnh biểu đồ..."}]
     },
     {
         "role": "user",
         "content": [
             {"type": "image", "image": "<image_data>"},
-            {"type": "text", "text": "What is the highest value in the bar chart?"}
+            {"type": "text", "text": "Giá trị cao nhất trong biểu đồ cột là bao nhiêu?"}
         ]
     },
     {
@@ -62,15 +62,15 @@ Here’s an example of how a formatted input might look:
 ]
 ```
 
-**Working with Multiple Images and Videos**
+**Làm việc với nhiều hình ảnh và video**
 
-VLMs can also process multiple images or even videos by adapting the input structure to accommodate sequential or parallel visual inputs. For videos, frames can be extracted and processed as individual images, while maintaining temporal order.
+VLMs cũng có thể xử lý nhiều hình ảnh hoặc thậm chí video bằng cách điều chỉnh cấu trúc đầu vào để chứa các đầu vào hình ảnh tuần tự hoặc song song. Đối với video, các khung hình có thể được trích xuất và xử lý như các hình ảnh riêng lẻ, trong khi vẫn duy trì thứ tự thời gian.
 
-## Resources
+## Tài liệu tham khảo
 
-- [Hugging Face Blog: Vision Language Models](https://huggingface.co/blog/vlms)
-- [Hugging Face Blog: SmolVLM](https://huggingface.co/blog/smolvlm) 
+- [Hugging Face Blog: Mô hình Ngôn ngữ Thị giác](https://huggingface.co/blog/vlms)
+- [Hugging Face Blog: SmolVLM](https://huggingface.co/blog/smolvlm)
 
-## Next Steps
+## Các bước tiếp theo
 
-⏩ Try the [vlm_usage_sample.ipynb](./notebooks/vlm_usage_sample.ipynb) to try different usages of SMOLVLM.
+⏩ Thử [vlm_usage_sample.ipynb](./notebooks/vlm_usage_sample.ipynb) để thử các cách sử dụng khác nhau của SMOLVLM.
