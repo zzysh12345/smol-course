@@ -1,102 +1,106 @@
-# VLM Fine-Tuning
-## Efficient Fine-Tuning
+# Tinh chỉnh Mô hình Ngôn ngữ Thị giác (VLM)
 
-### Quantization
-Quantization reduces the precision of model weights and activations, significantly lowering memory usage and speeding up computations. For example, switching from `float32` to `bfloat16` halves memory requirements per parameter while maintaining performance. For more aggressive compression, 8-bit and 4-bit quantization can be used, further reducing memory usage, though at the cost of some accuracy. These techniques can be applied to both the model and optimizer settings, enabling efficient training on hardware with limited resources.
+## Tinh chỉnh Hiệu quả
+
+### Lượng tử hóa (Quantization)
+
+Lượng tử hóa làm giảm độ chính xác của trọng số mô hình (model weights) và hàm kích hoạt (activations), giúp giảm đáng kể mức sử dụng bộ nhớ và tăng tốc độ tính toán. Ví dụ: chuyển từ `float32` sang `bfloat16` giúp giảm một nửa yêu cầu bộ nhớ cho mỗi tham số trong khi vẫn duy trì hiệu suất. Để nén mạnh hơn, có thể sử dụng lượng tử hóa `8 bit` và `4 bit`, giúp giảm mức sử dụng bộ nhớ hơn nữa, mặc dù phải đánh đổi bằng việc giảm độ chính xác. Những kỹ thuật này có thể được áp dụng cho cả trọng số mô hình và trình tối ưu hóa (optimizer), cho phép huấn luyện hiệu quả trên phần cứng có tài nguyên hạn chế.
 
 ### PEFT & LoRA
-As introduced in Module 3, LoRA (Low-Rank Adaptation) focuses on learning compact rank-decomposition matrices while keeping the original model weights frozen. This drastically reduces the number of trainable parameters, cutting resource requirements significantly. LoRA, when integrated with PEFT, enables fine-tuning of large models by only adjusting a small, trainable subset of parameters. This approach is particularly effective for task-specific adaptations, reducing billions of trainable parameters to just millions while maintaining performance.
 
-### Batch Size Optimization
-To optimize the batch size for fine-tuning, start with a large value and reduce it if out-of-memory (OOM) errors occur. Compensate by increasing `gradient_accumulation_steps`, effectively maintaining the total batch size over multiple updates. Additionally, enable `gradient_checkpointing` to lower memory usage by recomputing intermediate states during the backward pass, trading computation time for reduced activation memory requirements. These strategies maximize hardware utilization and help overcome memory constraints.
+Như đã giới thiệu trong Bài 3, LoRA (Low-Rank Adaptation) tập trung vào việc học các ma trận phân rã hạng thấp (rank-decomposition matrices) nhỏ gọn trong khi vẫn giữ nguyên trọng số của mô hình gốc. Điều này làm giảm đáng kể số lượng tham số có thể huấn luyện, giảm đáng kể yêu cầu tài nguyên. LoRA, khi được tích hợp với PEFT (Parameter-Efficient Fine-Tuning), cho phép tinh chỉnh các mô hình lớn bằng cách chỉ điều chỉnh một tập hợp con nhỏ các tham số có thể huấn luyện. Phương pháp này đặc biệt hiệu quả cho các thích ứng theo nhiệm vụ cụ thể, giảm hàng tỷ tham số có thể huấn luyện xuống chỉ còn hàng triệu trong khi vẫn duy trì hiệu suất.
+
+### Tối ưu hóa Kích thước Batch (Batch Size)
+
+Để tối ưu hóa kích thước batch cho quá trình tinh chỉnh, hãy bắt đầu với một giá trị lớn và giảm nếu xảy ra lỗi out-of-memory (OOM). Bù lại bằng cách tăng `gradient_accumulation_steps`, duy trì hiệu quả tổng kích thước batch trên nhiều lần cập nhật. Ngoài ra, hãy bật `gradient_checkpointing` để giảm mức sử dụng bộ nhớ bằng cách tính toán lại các trạng thái trung gian trong quá trình lan truyền ngược (backward pass), đánh đổi thời gian tính toán để giảm yêu cầu bộ nhớ kích hoạt. Những chiến lược này tối đa hóa việc sử dụng phần cứng và giúp khắc phục các hạn chế về bộ nhớ.
 
 ```python
 from transformers import TrainingArguments
 
 training_args = TrainingArguments(
-    output_dir="./fine_tuned_model",  # Directory for model checkpoints
-    per_device_train_batch_size=4,   # Batch size per device (GPU/TPU)
-    num_train_epochs=3,              # Total training epochs
-    learning_rate=5e-5,              # Learning rate
-    save_steps=1000,                 # Save checkpoint every 1000 steps
-    bf16=True,                       # Use mixed precision for training
-    gradient_checkpointing=True,     # Enable to reduce activation memory usage
-    gradient_accumulation_steps=16,  # Accumulate gradients over 16 steps
-    logging_steps=50                 # Log metrics every 50 steps
+    output_dir="./fine_tuned_model",  # Thư mục cho các checkpoint của mô hình
+    per_device_train_batch_size=4,   # Kích thước batch trên mỗi thiết bị (GPU/TPU)
+    num_train_epochs=3,              # Tổng số epoch huấn luyện
+    learning_rate=5e-5,              # Tốc độ học
+    save_steps=1000,                 # Lưu checkpoint sau mỗi 1000 bước
+    bf16=True,                       # Sử dụng mixed precision để huấn luyện
+    gradient_checkpointing=True,     # Bật để giảm mức sử dụng bộ nhớ kích hoạt
+    gradient_accumulation_steps=16,  # Tích lũy gradient qua 16 bước
+    logging_steps=50                 # Ghi nhật ký các số liệu sau mỗi 50 bước
 )
 ```
 
-## **Supervised Fine-Tuning (SFT)**
+## **Tinh chỉnh có Giám sát (Supervised Fine-Tuning - SFT)**
 
-Supervised Fine-Tuning (SFT) adapts a pre-trained Vision Language Model (VLM) to specific tasks by leveraging labeled datasets containing paired inputs, such as images and corresponding text. This method enhances the model's ability to perform domain-specific or task-specific functions, such as visual question answering, image captioning, or chart interpretation.
+Tinh chỉnh có Giám sát (SFT) điều chỉnh Mô hình Ngôn ngữ Thị giác (VLM) đã được huấn luyện trước cho các nhiệm vụ cụ thể bằng cách tận dụng các tập dữ liệu được gán nhãn có chứa các đầu vào được ghép nối, chẳng hạn như hình ảnh và văn bản tương ứng. Phương pháp này nâng cao khả năng của mô hình để thực hiện các chức năng cụ thể theo miền (domain-specific) hoặc theo nhiệm vụ (task-specific), chẳng hạn như trả lời câu hỏi bằng hình ảnh, chú thích hình ảnh hoặc diễn giải biểu đồ.
 
-### **Overview**
-SFT is essential when you need a VLM to specialize in a particular domain or solve specific problems where the base model's general capabilities may fall short. For example, if the model struggles with unique visual features or domain-specific terminology, SFT allows it to focus on these areas by learning from labeled data.
+### **Tổng quan**
 
-While SFT is highly effective, it has notable limitations:
-- **Data Dependency**: High-quality, labeled datasets tailored to the task are necessary.
-- **Computational Resources**: Fine-tuning large VLMs is resource-intensive.
-- **Risk of Overfitting**: Models can lose their generalization capabilities if fine-tuned too narrowly.
+SFT là cần thiết khi bạn cần một VLM chuyên về một lĩnh vực cụ thể hoặc giải quyết các vấn đề cụ thể mà khả năng chung của mô hình cơ sở có thể không đáp ứng được. Ví dụ: nếu mô hình gặp khó khăn với các đặc điểm hình ảnh độc đáo hoặc thuật ngữ chuyên ngành, SFT cho phép mô hình tập trung vào các lĩnh vực này bằng cách học từ dữ liệu được gán nhãn.
 
-Despite these challenges, SFT remains a robust technique for enhancing model performance in specific contexts.
+Mặc dù SFT rất hiệu quả, nó có những hạn chế đáng chú ý:
 
+- **Phụ thuộc vào dữ liệu**: Cần có các tập dữ liệu được gán nhãn chất lượng cao phù hợp với nhiệm vụ.
+- **Tài nguyên tính toán**: Tinh chỉnh các VLM lớn đòi hỏi nhiều tài nguyên.
+- **Nguy cơ quá khớp (Overfitting)**: Các mô hình có thể mất khả năng khái quát hóa nếu được tinh chỉnh quá hẹp.
 
-### **Usage**
-1. **Data Preparation**: Start with a labeled dataset that pairs images with text, such as questions and answers. For example, in tasks like chart analysis, the dataset `HuggingFaceM4/ChartQA` includes chart images, queries, and concise responses.
+Tuy vậy, SFT vẫn là một kỹ thuật mạnh mẽ để nâng cao hiệu suất của mô hình trong các bối cảnh cụ thể.
 
-2. **Model Setup**: Load a pre-trained VLM suitable for the task, such as `HuggingFaceTB/SmolVLM-Instruct`, and a processor for preparing text and image inputs. Configure the model for supervised learning and suitability for your hardware.
+### **Cách sử dụng**
 
-3. **Fine-Tuning Process**:
-   - **Formatting Data**: Structure the dataset into a chatbot-like format, pairing system messages, user queries, and corresponding answers.
-   - **Training Configuration**: Use tools like Hugging Face's `TrainingArguments` or TRL's `SFTConfig` to set up training parameters. These include batch size, learning rate, and gradient accumulation steps to optimize resource usage.
-   - **Optimization Techniques**: Use **gradient checkpointing** to save memory during training. Use quantized model to reduce memory requirements and speed up computations.
-   - Employ `SFTTrainer` trainer from the TRL library, to streamline the training process.
+1. **Chuẩn bị dữ liệu**: Bắt đầu với tập dữ liệu được gán nhãn ghép nối hình ảnh với văn bản, chẳng hạn như câu hỏi và câu trả lời. Ví dụ: trong các tác vụ như phân tích biểu đồ, tập dữ liệu `HuggingFaceM4/ChartQA` bao gồm hình ảnh biểu đồ, truy vấn và câu trả lời ngắn gọn.
 
+2. **Thiết lập mô hình**: Tải VLM đã được huấn luyện trước phù hợp với nhiệm vụ, chẳng hạn như `HuggingFaceTB/SmolVLM-Instruct`, và một bộ xử lý (processor) để chuẩn bị đầu vào văn bản và hình ảnh. Điều chỉnh cấu hình của mô hình để phù hợp với phần cứng của bạn.
 
-## Preference Optimization
+3. **Quá trình tinh chỉnh**:
+   - **Định dạng dữ liệu**: Cấu trúc tập dữ liệu thành định dạng giống như chatbot, ghép nối các câu lệnh hệ thống (system messages), các truy vấn của người dùng và các câu trả lời tương ứng.
+   - **Cấu hình huấn luyện**: Sử dụng các công cụ như `TrainingArguments` của Hugging Face hoặc `SFTConfig` của TRL để thiết lập các tham số huấn luyện. Chúng bao gồm kích thước batch, tốc độ học và các bước tích lũy gradient để tối ưu hóa việc sử dụng tài nguyên.
+   - **Kỹ thuật tối ưu hóa**: Sử dụng **gradient checkpointing** để tiết kiệm bộ nhớ trong quá trình huấn luyện. Sử dụng mô hình đã lượng tử hóa để giảm yêu cầu bộ nhớ và tăng tốc độ tính toán.
+   - Sử dụng `SFTTrainer` từ thư viện TRL, để hợp lý hóa quá trình huấn luyện.
 
-Preference Optimization, particularly Direct Preference Optimization (DPO), trains a Vision Language Model (VLM) to align with human preferences. Instead of strictly following predefined instructions, the model learns to prioritize outputs that humans subjectively prefer. This approach is particularly useful for tasks involving creative judgment, nuanced reasoning, or varying acceptable answers.
+## Tối ưu hóa theo Sở thích (Preference Optimization)
 
+Tối ưu hóa theo Sở thích, đặc biệt là Tối ưu hóa Sở thích Trực tiếp (Direct Preference Optimization - DPO), huấn luyện Mô hình Ngôn ngữ Thị giác (VLM) để phù hợp với sở thích của con người. Thay vì tuân theo các hướng dẫn được xác định trước một cách nghiêm ngặt, mô hình học cách ưu tiên các đầu ra mà con người chủ quan thích hơn. Phương pháp này đặc biệt hữu ích cho các tác vụ liên quan đến phán đoán sáng tạo, lý luận sắc thái hoặc các câu trả lời có thể chấp nhận được khác nhau.
 
-### **Overview**
-Preference Optimization addresses scenarios where subjective human preferences are central to task success. By fine-tuning on datasets that encode human preferences, DPO enhances the model's ability to generate responses that are contextually and stylistically aligned with user expectations. This method is particularly effective for tasks like creative writing, customer interactions, or multi-choice scenarios.
+### **Tổng quan**
 
-Despite its benefits, Preference Optimization has challenges:
-- **Data Quality**: High-quality, preference-annotated datasets are required, often making data collection a bottleneck.
-- **Complexity**: Training can involve sophisticated processes such as pairwise sampling of preferences and balancing computational resources.
+Tối ưu hóa theo Sở thích giải quyết các tình huống trong đó sở thích chủ quan của con người là trung tâm của sự thành công của nhiệm vụ. Bằng cách tinh chỉnh trên các tập dữ liệu mã hóa sở thích của con người, DPO nâng cao khả năng của mô hình trong việc tạo ra các phản hồi phù hợp với ngữ cảnh và phong cách với mong đợi của người dùng. Phương pháp này đặc biệt hiệu quả cho các tác vụ như viết sáng tạo, tương tác với khách hàng hoặc các tình huống có nhiều lựa chọn.
 
-Preference datasets must capture clear preferences between candidate outputs. For example, a dataset may pair a question with two responses—one preferred and the other less acceptable. The model learns to predict the preferred response, even if it's not entirely correct, as long as it's better aligned with human judgment.
+Mặc dù có những lợi ích, Tối ưu hóa theo Sở thích có những thách thức:
 
+- **Chất lượng dữ liệu**: Cần có các tập dữ liệu được chú thích theo sở thích chất lượng cao, thường làm cho việc thu thập dữ liệu trở thành một nút thắt cổ chai.
+- **Độ phức tạp**: Việc huấn luyện có thể liên quan đến các quy trình phức tạp như lấy mẫu theo cặp các sở thích và cân bằng tài nguyên tính toán.
 
-### **Usage**
-1. **Dataset Preparation**  
-   A preference-labeled dataset is crucial for training. Each example typically consists of a prompt (e.g., an image and question) and two candidate responses: one chosen (preferred) and one rejected. For example:
+Các tập dữ liệu sở thích phải nắm bắt được các sở thích rõ ràng giữa các đầu ra ứng viên. Ví dụ: một tập dữ liệu có thể ghép nối một câu hỏi với hai câu trả lời—một câu trả lời được ưu tiên và câu trả lời kia ít được chấp nhận hơn. Mô hình học cách dự đoán câu trả lời được ưu tiên, ngay cả khi nó không hoàn toàn chính xác, miễn là nó phù hợp hơn với đánh giá của con người.
 
-   - **Question**: How many families?  
-     - **Rejected**: The image does not provide any information about families.  
-     - **Chosen**: The image shows a Union Organization table setup with 18,000 families.  
+### **Cách sử dụng**
 
-   The dataset teaches the model to prioritize better-aligned responses, even if they aren’t perfect. 
+1. **Chuẩn bị tập dữ liệu**
+   Một tập dữ liệu được gán nhãn sở thích là rất quan trọng để huấn luyện. Mỗi ví dụ thường bao gồm một lời nhắc (prompt) (ví dụ: một hình ảnh và câu hỏi) và hai câu trả lời ứng viên: một câu được chọn (ưa thích) và một câu bị từ chối. Ví dụ:
 
-2. **Model Setup**  
-   Load a pre-trained VLM and integrate it with Hugging Face's TRL library, which supports DPO, and a processor for preparing text and image inputs. Configure the model for supervised learning and suitability for your hardware.
+   - **Câu hỏi**: Có bao nhiêu gia đình?
+     - **Bị từ chối**: Hình ảnh không cung cấp bất kỳ thông tin nào về các gia đình.
+     - **Được chọn**: Hình ảnh cho thấy một bảng gồm 18.000 gia đình.
 
-3. **Training Pipeline**  
-   Training involves configuring DPO-specific parameters. Here's a summary of the process:
+   Tập dữ liệu dạy cho mô hình ưu tiên các câu trả lời phù hợp hơn, ngay cả khi chúng không hoàn hảo.
 
-   - **Format Dataset**: Structure each sample with prompts, images, and candidate answers.
-   - **Loss Function**: Use a preference-based loss function to optimize the model for selecting the preferred output.
-   - **Efficient Training**: Combine techniques like quantization, gradient accumulation, and LoRA adapters to optimize memory and computation.
+2. **Thiết lập mô hình**
+   Tải VLM đã được huấn luyện trước và tích hợp nó với thư viện TRL của Hugging Face, hỗ trợ DPO và bộ xử lý để chuẩn bị đầu vào văn bản và hình ảnh. Định cấu hình mô hình để học có giám sát và phù hợp với phần cứng của bạn.
 
+3. **Quy trình huấn luyện**
+   Việc huấn luyện bao gồm việc định cấu hình các tham số cụ thể cho DPO. Dưới đây là bản tóm tắt về quy trình:
 
+   - **Định dạng tập dữ liệu**: Cấu trúc từng mẫu với lời nhắc, hình ảnh và câu trả lời ứng viên.
+   - **Hàm mất mát (Loss Function)**: Sử dụng hàm mất mát dựa trên sở thích để tối ưu hóa mô hình để chọn đầu ra được ưu tiên.
+   - **Huấn luyện hiệu quả**: Kết hợp các kỹ thuật như lượng tử hóa, tích lũy gradient và bộ điều hợp LoRA (LoRA adapters) để tối ưu hóa bộ nhớ và tính toán.
 
-## Resources
+## Tài liệu tham khảo
 
-- [Hugging Face Learn: Supervised Fine-Tuning VLMs](https://huggingface.co/learn/cookbook/fine_tuning_vlm_trl) 
-- [Hugging Face Learn: Supervised Fine-Tuning SmolVLM](https://huggingface.co/learn/cookbook/fine_tuning_smol_vlm_sft_trl)  
-- [Hugging Face Learn: Preference Optimization Fine-Tuning SmolVLM](https://huggingface.co/learn/cookbook/fine_tuning_vlm_dpo_smolvlm_instruct)  
-- [Hugging Face Blog: Preference Optimization for VLMs](https://huggingface.co/blog/dpo_vlm)
+- [Hugging Face Learn: Tinh chỉnh có giám sát VLMs](https://huggingface.co/learn/cookbook/fine_tuning_vlm_trl)
+- [Hugging Face Learn: Tinh chỉnh có giám sát SmolVLM](https://huggingface.co/learn/cookbook/fine_tuning_smol_vlm_sft_trl)
+- [Hugging Face Learn: Tinh chỉnh tối ưu hóa tùy chọn SmolVLM](https://huggingface.co/learn/cookbook/fine_tuning_vlm_dpo_smolvlm_instruct)
+- [Hugging Face Blog: Tối ưu hóa tùy chọn cho VLMs](https://huggingface.co/blog/dpo_vlm)
 
-## Next Steps
+## Các bước tiếp theo
 
-⏩ Try the [vlm_finetune_sample.ipynb](./notebooks/vlm_finetune_sample.ipynb) to implement this unified approach to preference alignment.
+⏩ Thử [vlm_finetune_sample.ipynb](./notebooks/vlm_finetune_sample.ipynb) để triển khai phương pháp thống nhất này để căn chỉnh tùy chọn.
