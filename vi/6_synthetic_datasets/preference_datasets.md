@@ -1,16 +1,16 @@
-# Generating Preference Datasets
+# Tạo tập dữ liệu ưu tiên (Preference Datasets)
 
-Within [the chapter on preference alignment](../2_preference_alignment/README.md), we learned about Direct Preference Optimization. In this section, we will explore how to generate preference datasets for methods like DPO. We will build on top of the methods that were introduced in [generating instruction datasets](./instruction_datasets.md). Additionally, we will show how to add extra completions to the dataset using basic prompting or by using EvolQuality to improve the quality of responses. Lastly, we will show how UltraFeedback can be used to generate scores and critiques.
+Trong [chương về điều chỉnh ưu tiên (preference alignment)](../2_preference_alignment/README.md), chúng ta đã học về Tối ưu hóa ưu tiên trực tiếp (Direct Preference Optimization). Trong phần này, chúng ta sẽ khám phá cách tạo tập dữ liệu ưu tiên cho các phương pháp như DPO. Chúng ta sẽ xây dựng dựa trên các phương pháp đã được giới thiệu trong phần [tạo tập dữ liệu hướng dẫn](./instruction_datasets.md). Ngoài ra, chúng ta sẽ chỉ ra cách thêm các phần hoàn thành (completions) bổ sung vào tập dữ liệu bằng cách sử dụng kỹ thuật nhắc nhở (prompting) cơ bản hoặc bằng cách sử dụng EvolQuality để cải thiện chất lượng của các phản hồi. Cuối cùng, chúng ta sẽ chỉ ra cách `UltraFeedback` có thể được sử dụng để tạo điểm số và phê bình.
 
-## Creating multiple completions
+## Tạo nhiều phần hoàn thành (completions)
 
-Preference data is a dataset with multiple `completions` for the same `instruction`. We can add more `completions` to a dataset by prompting a model to generate them. When doing this, we need to ensure that the second completion is not too similar to the first completion in terms of overall quality and phrasing. This is important because the model needs to be optimized for a clear preference. We want to know which completion is preferred over the other, normally referred to as `chosen` and `rejected`. We will go into more detail about determining chosen and rejected completions in the [section on creating scores](#creating-scores).
+Dữ liệu ưu tiên là tập dữ liệu có nhiều `phần hoàn thành` cho cùng một `hướng dẫn`. Chúng ta có thể thêm nhiều `phần hoàn thành` hơn vào tập dữ liệu bằng cách nhắc nhở (prompt) một mô hình tạo ra chúng. Khi làm điều này, chúng ta cần đảm bảo rằng phần hoàn thành thứ hai không quá giống với phần hoàn thành đầu tiên về chất lượng tổng thể và cách diễn đạt. Điều này rất quan trọng vì mô hình cần được tối ưu hóa cho một ưu tiên rõ ràng. Chúng ta muốn biết phần hoàn thành nào được ưa thích hơn phần kia, thường được gọi là `chosen` (được chọn) và `rejected` (bị từ chối). Chúng ta sẽ đi vào chi tiết hơn về việc xác định các phần hoàn thành được chọn và bị từ chối trong [phần tạo điểm số](#creating-scores).
 
-### Model pooling
+### Tổng hợp mô hình (Model pooling)
 
-You can use models from different model families to generate a second completion, which is called model pooling. To further improve the quality of the second completion, you can use different generation arguments, like tweaking the `temperature`. Lastly, you can use different prompt templates or system prompts to generate a second completion to ensure diversity based on specific characteristics defined in the template. In theory, we could take two models of varying quality and use the better one as the `chosen` completion.
+Bạn có thể sử dụng các mô hình từ các họ mô hình khác nhau để tạo phần hoàn thành thứ hai, được gọi là tổng hợp mô hình. Để cải thiện hơn nữa chất lượng của phần hoàn thành thứ hai, bạn có thể sử dụng các đối số tạo khác nhau, như điều chỉnh `temperature`. Cuối cùng, bạn có thể sử dụng các mẫu lời nhắc (prompt templates) hoặc lời nhắc hệ thống (system prompts) khác nhau để tạo phần hoàn thành thứ hai nhằm đảm bảo sự đa dạng dựa trên các đặc điểm cụ thể được xác định trong mẫu. Về lý thuyết, chúng ta có thể lấy hai mô hình có chất lượng khác nhau và sử dụng mô hình tốt hơn làm phần hoàn thành `chosen`.
 
-Let's start with model pooling by loading the [Qwen/Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct) and [HuggingFaceTB/SmolLM2-1.7B-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct) models using the `transformers` integration of the `distilabel` library. Using these models, we will create two synthetic `responses` for a given `prompt`. We will create another pipeline with `LoadDataFromDicts`, `TextGeneration`, and `GroupColumns`. We will first load data, then use two generation steps, and then group the results. We connect the steps and flow the data through the pipeline using the `>>` operator and `[]`, which means that we want to use the output of the previous step as the input for both steps within the list.
+Hãy bắt đầu với việc tổng hợp mô hình bằng cách tải các mô hình [Qwen/Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct) và [HuggingFaceTB/SmolLM2-1.7B-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct) bằng cách sử dụng tích hợp `transformers` của thư viện `distilabel`. Sử dụng các mô hình này, chúng ta sẽ tạo ra hai `phản hồi` tổng hợp cho một `lời nhắc` nhất định. Chúng ta sẽ tạo một quy trình (pipeline) khác với `LoadDataFromDicts`, `TextGeneration` và `GroupColumns`. Trước tiên, chúng ta sẽ tải dữ liệu, sau đó sử dụng hai bước tạo và sau đó nhóm các kết quả lại. Chúng ta kết nối các bước và luồng dữ liệu thông qua quy trình bằng toán tử `>>` và `[]`, có nghĩa là chúng ta muốn sử dụng đầu ra của bước trước làm đầu vào cho cả hai bước trong danh sách.
 
 ```python
 from distilabel.llms import TransformersLLM
@@ -19,7 +19,7 @@ from distilabel.steps import GroupColumns, LoadDataFromDicts
 from distilabel.steps.tasks import TextGeneration
 
 with Pipeline() as pipeline:
-    data = LoadDataFromDicts(data=[{"instruction": "What is synthetic data?"}])
+    data = LoadDataFromDicts(data=[{"instruction": "Dữ liệu giả lập (synthetic data) là gì?"}])
     llm_a = TransformersLLM(model="HuggingFaceTB/SmolLM2-1.7B-Instruct")
     gen_a = TextGeneration(llm=llm_a)
     llm_b = TransformersLLM(model="Qwen/Qwen2.5-1.5B-Instruct")
@@ -31,35 +31,35 @@ if __name__ == "__main__":
     distiset = pipeline.run()
     print(distiset["default"]["train"]["grouped_generation"][0])
 # {[
-#   'Synthetic data is artificially generated data that mimics real-world usage.',
-#   'Synthetic data refers to data that has been generated artificially.'
+#   'Dữ liệu giả lập là dữ liệu được tạo ra nhân tạo, bắt chước cách sử dụng trong thế giới thực.',
+#   'Dữ liệu giả lập đề cập đến dữ liệu đã được tạo ra một cách nhân tạo.'
 # ]}
 ```
 
-As you can see, we have two synthetic `completions` for the given `prompt`. We could have boosted diversity by initializing the `TextGeneration` steps with a specific `system_prompt` or by passing generation arguments to the `TransformersLLM`. Let's now see how we can improve the quality of the `completions` using EvolQuality.
+Như bạn có thể thấy, chúng ta có hai `phần hoàn thành` tổng hợp cho `lời nhắc` đã cho. Chúng ta có thể tăng cường sự đa dạng bằng cách khởi tạo các bước `TextGeneration` với một `system_prompt` cụ thể hoặc bằng cách truyền các đối số tạo cho `TransformersLLM`. Bây giờ hãy xem cách chúng ta có thể cải thiện chất lượng của các `phần hoàn thành` bằng EvolQuality.
 
 ### EvolQuality
 
-EvolQuality is similar to [EvolInstruct](./instruction_datasets.md#evolinstruct) - it is a prompting technique but it evolves `completions` instead of the input `prompt`. The task takes both a `prompt` and `completion` and evolves the `completion` into a version that better responds to the `prompt` based on a set of criteria. This better version is defined according to criteria for improving helpfulness, relevance, deepening, creativity, or details. Because this automatically generates a second completion, we can use it to add more `completions` to a dataset. In theory, we could even assume the evolution is better than the original completion and use it as the `chosen` completion out of the box.
+EvolQuality tương tự như [EvolInstruct](./instruction_datasets.md#evolinstruct) - đó là một kỹ thuật nhắc nhở nhưng nó phát triển `các phần hoàn thành` thay vì `lời nhắc` đầu vào. Tác vụ lấy cả `lời nhắc` và `phần hoàn thành` và phát triển `phần hoàn thành` thành một phiên bản phản hồi tốt hơn cho `lời nhắc` dựa trên một tập hợp các tiêu chí. Phiên bản tốt hơn này được định nghĩa theo các tiêu chí để cải thiện tính hữu ích, mức độ liên quan, đào sâu, sáng tạo hoặc chi tiết. Bởi vì điều này tự động tạo ra phần hoàn thành thứ hai, chúng ta có thể sử dụng nó để thêm nhiều `phần hoàn thành` hơn vào tập dữ liệu. Về lý thuyết, chúng ta thậm chí có thể giả định rằng sự tiến hóa tốt hơn phần hoàn thành ban đầu và sử dụng nó làm phần hoàn thành `chosen` ngay lập tức.
 
-The prompt is [implemented in distilabel](https://github.com/argilla-io/distilabel/tree/main/src/distilabel/steps/tasks/evol_quality) and a simplified version is shown below:
+Lời nhắc được [triển khai trong distilabel](https://github.com/argilla-io/distilabel/tree/main/src/distilabel/steps/tasks/evol_quality) và phiên bản đơn giản hóa được hiển thị bên dưới:
 
 ```bash
-I want you act as a Response Rewriter.
-Given prompt a and a response, rewrite the response into a better version.
-Complicate the prompt based on the following criteria:
+Tôi muốn bạn đóng vai trò là một Trình viết lại phản hồi (Response Rewriter).
+Cho một lời nhắc và một phản hồi, hãy viết lại phản hồi thành một phiên bản tốt hơn.
+Phức tạp hóa lời nhắc dựa trên các tiêu chí sau:
 {{ criteria }}
 
-# Prompt
+# Lời nhắc
 {{ input }}
 
-# Response
+# Phản hồi
 {{ output }}
 
-# Improved Response
+# Phản hồi được cải thiện
 ```
 
-Let's use the [EvolQuality class](https://distilabel.argilla.io/dev/components-gallery/tasks/evolquality/) to evolve the synthetic `prompt` and `completion` from [the Model Pooling section](#model-pooling) into a better version. For this example, we will only evolve for one generation.
+Hãy sử dụng [lớp EvolQuality](https://distilabel.argilla.io/dev/components-gallery/tasks/evolquality/) để phát triển `lời nhắc` và `phần hoàn thành` tổng hợp từ [phần Tổng hợp mô hình](#model-pooling) thành một phiên bản tốt hơn. Đối với ví dụ này, chúng ta sẽ chỉ tiến hóa trong một thế hệ.
 
 ```python
 from distilabel.llms import TransformersLLM
@@ -69,49 +69,49 @@ llm = TransformersLLM(model="HuggingFaceTB/SmolLM2-1.7B-Instruct")
 evol_quality = EvolQuality(llm=llm, num_evolutions=1)
 evol_quality.load()
 
-instruction = "What is synthetic data?"
-completion = "Synthetic data is artificially generated data that mimics real-world usage."
+instruction = "Dữ liệu giả lập (synthetic data) là gì?"
+completion = "Dữ liệu giả lập là dữ liệu được tạo ra nhân tạo, bắt chước cách sử dụng trong thế giới thực."
 
 next(evol_quality.process([{
     "instruction": instruction,
     "response": completion
 }]))
-# The process of generating synthetic data through manual prompting involves creating artificial data sets that mimic real-world usage patterns.
+# Quá trình tạo dữ liệu giả lập thông qua việc nhắc nhở thủ công bao gồm việc tạo ra các tập dữ liệu nhân tạo bắt chước các kiểu sử dụng trong thế giới thực.
 ```
 
-The `response` is now more complex and specific to the `instruction`. This is a good start, but as we have seen with EvolInstruct, evolved generations are not always better. Hence, it is important to use additional evaluation techniques to ensure the quality of the dataset. We will explore this in the next section.
+`Phản hồi` bây giờ phức tạp hơn và cụ thể hơn cho `hướng dẫn`. Đây là một khởi đầu tốt, nhưng như chúng ta đã thấy với EvolInstruct, các thế hệ tiến hóa không phải lúc nào cũng tốt hơn. Do đó, điều quan trọng là phải sử dụng các kỹ thuật đánh giá bổ sung để đảm bảo chất lượng của tập dữ liệu. Chúng ta sẽ khám phá điều này trong phần tiếp theo.
 
-## Creating Scores
+## Tạo điểm số
 
-Scores are a measure of how much one response is preferred over another. In general, these scores can be absolute, subjective, or relative. For this course, we will focus on the first two because they are most valuable for creating preference datasets. This scoring is a way of judging and evaluating using language models and therefore has some overlap with the evaluation techniques we have seen in [the chapter on evaluation](../3_evaluation/README.md). As with the other evaluation techniques, scores and evaluations normally require larger models to better align with human preferences.
+Điểm số là thước đo mức độ phản hồi này được ưa thích hơn phản hồi khác. Nhìn chung, những điểm số này có thể là tuyệt đối, chủ quan hoặc tương đối. Đối với khóa học này, chúng ta sẽ tập trung vào hai loại đầu tiên vì chúng có giá trị nhất để tạo các tập dữ liệu ưu tiên. Việc chấm điểm này là một cách đánh giá và nhận xét bằng cách sử dụng các mô hình ngôn ngữ và do đó có một số điểm tương đồng với các kỹ thuật đánh giá mà chúng ta đã thấy trong [chương về đánh giá](../3_evaluation/README.md). Cũng như các kỹ thuật đánh giá khác, điểm số và đánh giá thường yêu cầu các mô hình lớn hơn để phù hợp hơn với ưu tiên của con người.
 
 ### UltraFeedback
 
-UltraFeedback is a technique that generates scores and critiques for a given `prompt` and its `completion`.
+UltraFeedback là một kỹ thuật tạo ra điểm số và phê bình cho một `lời nhắc` nhất định và `phần hoàn thành` của nó.
 
-The scores are based on the quality of the `completion` according to a set of criteria. There are four fine-grained criteria: `helpfulness`, `relevance`, `deepening`, and `creativity`. These are useful but generally speaking, using the overall criteria is a good start, which allows us to simplify the process of generating scores. The scores can be used to determine which `completion` is the `chosen` and which is the `rejected` one. Because they are absolute, they can also be used as interesting filters for outliers in the dataset, either finding the worst completions or the pairs with more or less difference.
+Điểm số dựa trên chất lượng của `phần hoàn thành` theo một tập hợp các tiêu chí. Có bốn tiêu chí chi tiết: `helpfulness` (tính hữu ích), `relevance` (mức độ liên quan), `deepening` (đào sâu) và `creativity` (sáng tạo). Chúng rất hữu ích nhưng nói chung, sử dụng các tiêu chí tổng thể là một khởi đầu tốt, cho phép chúng ta đơn giản hóa quá trình tạo điểm số. Điểm số có thể được sử dụng để xác định `phần hoàn thành` nào là `chosen` và phần nào là `rejected`. Bởi vì chúng là tuyệt đối, chúng cũng có thể được sử dụng làm bộ lọc thú vị cho các giá trị ngoại lệ trong tập dữ liệu, tìm các phần hoàn thành tệ nhất hoặc các cặp có ít nhiều sự khác biệt.
 
-The critiques are added to provide reasoning for the score. They can be used as extra context to help us understand the differences between the scores. The language model generates extensive critiques which is very useful, but this also introduces extra cost and complexity to the process because generating critiques is more expensive than generating a single token to represent a score.
+Các phê bình được thêm vào để cung cấp lý do cho điểm số. Chúng có thể được sử dụng làm ngữ cảnh bổ sung để giúp chúng ta hiểu sự khác biệt giữa các điểm số. Mô hình ngôn ngữ tạo ra các phê bình sâu rộng rất hữu ích, nhưng điều này cũng làm tăng thêm chi phí và độ phức tạp cho quá trình vì việc tạo ra các phê bình tốn kém hơn so với việc tạo ra một token duy nhất để đại diện cho điểm số.
 
-The prompt is [implemented in distilabel](https://github.com/argilla-io/distilabel/tree/main/src/distilabel/steps/tasks/templates/ultrafeedback) and a simplified version is shown below:
+Lời nhắc được [triển khai trong distilabel](https://github.com/argilla-io/distilabel/tree/main/src/distilabel/steps/tasks/templates/ultrafeedback) và phiên bản đơn giản hóa được hiển thị bên dưới:
 
 ```bash
-Evaluate the model's outputs based on various criteria: Helpfulness, Relevance, Deepening, Creativity
-Your role is to provide a holistic assessment based on the above factors.
-Score the output from 1 to 5 on overall quality.
+Đánh giá đầu ra của mô hình dựa trên các tiêu chí khác nhau: Tính hữu ích, Mức độ liên quan, Đào sâu, Sáng tạo
+Vai trò của bạn là cung cấp một đánh giá tổng thể dựa trên các yếu tố trên.
+Chấm điểm đầu ra từ 1 đến 5 về chất lượng tổng thể.
 
-Answer with the following format: score - rationale
+Trả lời theo định dạng sau: điểm số - lý do
 
-# Input
+# Đầu vào
 {{ input }}
 
-# Response
+# Phản hồi
 {{ output }}
 
-# Score - Rationale
+# Điểm số - Lý do
 ```
 
-Let's use the [UltraFeedback class](https://distilabel.argilla.io/dev/components-gallery/tasks/ultrafeedback/) to evaluate the synthetic `prompt` and `completion` from [the Model Pooling section](#model-pooling).
+Hãy sử dụng [lớp UltraFeedback](https://distilabel.argilla.io/dev/components-gallery/tasks/ultrafeedback/) để đánh giá `lời nhắc` và `phần hoàn thành` tổng hợp từ [phần Tổng hợp mô hình](#model-pooling).
 
 ```python
 from distilabel.llms import TransformersLLM
@@ -121,9 +121,9 @@ llm = TransformersLLM(model="HuggingFaceTB/SmolLM2-1.7B-Instruct")
 ultrafeedback = UltraFeedback(llm=llm)
 ultrafeedback.load()
 
-instruction = "What is synthetic data?"
-completion_a = "Synthetic data is artificially generated data that mimics real-world usage."
-completion_b = "Synthetic data refers to data that has been generated artificially."
+instruction = "Dữ liệu giả lập (synthetic data) là gì?"
+completion_a = "Dữ liệu giả lập là dữ liệu được tạo ra nhân tạo, bắt chước cách sử dụng trong thế giới thực."
+completion_b = "Dữ liệu giả lập đề cập đến dữ liệu đã được tạo ra một cách nhân tạo."
 
 next(ultrafeedback.process([{
     "instruction": instruction,
@@ -132,24 +132,24 @@ next(ultrafeedback.process([{
 # [
 #     {
 #         'ratings': [4, 5],
-#         'rationales': ['could have been more specific', 'good definition'],
+#         'rationales': ['có thể cụ thể hơn', 'định nghĩa tốt'],
 #     }
 # ]
 ```
 
-## Best Practices
+## Các phương pháp hay nhất
 
-- Overall scores are cheaper and easier to generate than critiques and specific scores
-- Use bigger models to generate scores and critiques
-- Use a diverse set of models to generate scores and critiques
-- Iterate on configuration of the `system_prompt` and models
+- Phương pháp đánh giá điểm số tổng thể thường rẻ hơn và dễ tạo hơn so với phê bình và điểm số cụ thể
+- Sử dụng các mô hình lớn hơn để tạo điểm số và phê bình
+- Sử dụng một tập hợp đa dạng các mô hình để tạo điểm số và phê bình
+- Lặp lại cấu hình của `system_prompt` và các mô hình
 
-## Next Steps
+## Các bước tiếp theo
 
-👨🏽‍💻 Code -[Exercise Notebook](./notebooks/preference_dpo_dataset.ipynb) to generate a dataset for instruction tuning
+👨🏽‍💻 Lập trình -[Notebook bài tập](./notebooks/preference_dpo_dataset.ipynb) để tạo tập dữ liệu để tinh chỉnh hướng dẫn
 
-## References
+## Tài liệu tham khảo
 
-- [Distilabel Documentation](https://distilabel.argilla.io/latest/)
+- [Tài liệu Distilabel](https://distilabel.argilla.io/latest/)
 - [Deita](https://arxiv.org/abs/2312.15685)
 - [UltraFeedback](https://arxiv.org/abs/2310.01377)
