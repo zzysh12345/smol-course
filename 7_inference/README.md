@@ -16,7 +16,7 @@ Learn how to use the Hugging Face Transformers pipeline for basic inference. We'
 
 ### 2. [Production Inference with TGI](./tgi_inference.md)
 
-Learn how to deploy models for production using Text Generation Inference. We'll explore optimized serving techniques, batching strategies, and monitoring solutions. TGI provides production-ready features like health checks, metrics, and Docker deployment options. [Start learning](./tgi_inference.md).
+Learn how to deploy models for production using Text Generation Inference. We'll explore optimized serving techniques, batching strategies, and monitoring solutions. TGI provides production-ready features like health checks, metrics, and Docker deployment options. [Start learning](./text_generation_inference.md).
 
 ### Exercise Notebooks
 
