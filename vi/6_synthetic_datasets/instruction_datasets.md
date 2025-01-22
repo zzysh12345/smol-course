@@ -1,16 +1,16 @@
-# Generating Instruction Datasets
+# Tạo tập dữ liệu hướng dẫn
 
-Within [the chapter on instruction tuning](../1_instruction_tuning/README.md), we learned about fine-tuning models with Supervised Fine-tuning. In this section, we will explore how to generate instruction datasets for SFT. We will explore creating instruction tuning datasets through basic prompting and using more refined techniques from papers. Instruction tuning datasets with seed data for in-context learning can be created through methods like SelfInstruct and Magpie. Additionally, we will explore instruction evolution through EvolInstruct. Lastly, we will explore how to generate a dataset for instruction tuning using a distilabel pipeline.
+Trong [chương về tinh chỉnh hướng dẫn (instruction tuning)](../1_instruction_tuning/README.md), chúng ta đã học về việc tinh chỉnh mô hình với Tinh chỉnh có giám sát (Supervised Fine-tuning). Trong phần này, chúng ta sẽ khám phá cách tạo tập dữ liệu hướng dẫn cho SFT. Chúng ta sẽ khám phá việc tạo các tập dữ liệu tinh chỉnh hướng dẫn thông qua việc nhắc nhở (prompting) cơ bản và sử dụng các kỹ thuật tinh tế hơn từ các bài báo. Các tập dữ liệu tinh chỉnh hướng dẫn với dữ liệu hạt giống (seed data) để học trong ngữ cảnh (in-context learning) có thể được tạo ra thông qua các phương pháp như SelfInstruct và Magpie. Ngoài ra, chúng ta sẽ khám phá sự tiến hóa hướng dẫn thông qua EvolInstruct. Cuối cùng, chúng ta sẽ khám phá cách tạo tập dữ liệu để tinh chỉnh hướng dẫn bằng cách sử dụng quy trình (pipeline) distilabel.
 
-## From Prompt to Data
+## Từ lời nhắc đến dữ liệu
 
-Synthetic data sounds fancy, but it can be simplified as creating data through effective prompting to extract knowledge from a model. In turn, you can think of this as a way to generate data for a specific task. The challenge is prompting effectively while ensuring the data is diverse and representative. Fortunately, many papers have explored this problem, and we will explore some of the useful ones during this course. First things first, we will explore how to generate synthetic data through manual prompting.
+Dữ liệu giả lập (Synthetic data) nghe có vẻ phức tạp, nhưng nó có thể được đơn giản hóa thành việc tạo dữ liệu thông qua việc nhắc nhở hiệu quả để trích xuất kiến thức từ mô hình. Đổi lại, bạn có thể coi đây là một cách để tạo dữ liệu cho một tác vụ cụ thể. Thách thức là nhắc nhở một cách hiệu quả trong khi đảm bảo dữ liệu đa dạng và mang tính đại diện. May mắn thay, nhiều bài báo đã khám phá vấn đề này và chúng ta sẽ khám phá một số bài báo hữu ích trong khóa học này. Trước hết, chúng ta sẽ khám phá cách tạo dữ liệu giả lập thông qua việc nhắc nhở thủ công.
 
-### Basic Prompting
+### Nhắc nhở cơ bản (Basic Prompting)
 
-Let's start with a basic example and load the [HuggingFaceTB/SmolLM2-1.7B-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct) model using the `transformers` integration of the `distilabel` library. We will use the `TextGeneration` class to generate a synthetic `prompt` and use that to generate a `completion`.
+Hãy bắt đầu với một ví dụ cơ bản và tải mô hình [HuggingFaceTB/SmolLM2-1.7B-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct) bằng cách sử dụng tích hợp `transformers` của thư viện `distilabel`. Chúng ta sẽ sử dụng lớp `TextGeneration` để tạo ra một `lời nhắc` (prompt) tổng hợp và sử dụng nó để tạo ra một `phần hoàn thành` (completion).
 
-Next, we will load the model using the `distilabel` library.
+Tiếp theo, chúng ta sẽ tải mô hình bằng thư viện `distilabel`.
 
 ```python
 from distilabel.llms import TransformersLLM
@@ -21,40 +21,40 @@ gen = TextGeneration(llm=llm)
 gen.load()
 ```
 
-!!! note
-    Distilabel loads the `llm` into memory, so, when working in a notebook, we need to `gen.unload()` after we are done with it to avoid memory issues.
+> **Note:**  
+> `Distilabel` tải `llm` vào bộ nhớ, vì vậy, khi làm việc trong notebook, chúng ta cần `gen.unload()` sau khi hoàn thành để tránh các vấn đề về bộ nhớ.
 
-We will now use the `llm` to generate a `prompt` for instruction tuning.
-
-```python
-next(gen.process([{"instruction": "Generate a questions about the Hugging Face Smol-Course on small AI models."}]))
-# What is the purpose of Smol-Course?
-```
-
-Lastly, we can use that same `prompt` as input to generate a `completion`.
+Bây giờ chúng ta sẽ sử dụng `llm` để tạo ra một `lời nhắc` để tinh chỉnh hướng dẫn.
 
 ```python
-next(gen.process([{"instruction": "What is the purpose of Smol-Course?"}]))
-# The Smol-Course is a platform designed to learning computer science concepts.
+next(gen.process([{"instruction": "Tạo một câu hỏi về Khóa học Smol của Hugging Face về các mô hình AI nhỏ."}]))
+# Ví dụ: Mục đích của Khóa học Smol là gì?
 ```
 
-Cool! We can generated a synthetic `prompt` and a corresponding `completion`. Re-using this simple approach at scale will allow us to generate a lot more data however, the quality of the data is not that great and does not take into account the nuances of our course or domain. Additionally, re-running the current code shows us the data is not that diverse. Luckily, there are ways to solve this problem.
+Cuối cùng, chúng ta có thể sử dụng cùng một `lời nhắc` đó làm đầu vào để tạo ra một `phần hoàn thành`.
+
+```python
+next(gen.process([{"instruction": "Mục đích của Khóa học Smol là gì?"}]))
+# Ví dụ: Khóa học Smol là một nền tảng được thiết kế để học các khái niệm khoa học máy tính.
+```
+
+Tuyệt! Chúng ta có thể tạo ra một `lời nhắc` tổng hợp và một `phần hoàn thành` tương ứng. Việc sử dụng lại phương pháp đơn giản này trên quy mô lớn sẽ cho phép chúng ta tạo ra nhiều dữ liệu hơn, tuy nhiên, chất lượng của dữ liệu không tốt lắm và không tính đến các sắc thái của khóa học hoặc lĩnh vực của chúng ta. Ngoài ra, việc chạy lại mã hiện tại cho chúng ta thấy dữ liệu không đa dạng lắm. May mắn thay, có nhiều cách để giải quyết vấn đề này.
 
 ### SelfInstruct
 
-SelfInstruct is a prompt that generates new instructions based on a seed dataset. This seed data can be a single instruction or a piece of context. The process begins with a pool of initial seed data. The language model is then prompted to generate new instructions based on this seed data using in-context learning. The prompt is [implemented in distilabel](https://github.com/argilla-io/distilabel/blob/main/src/distilabel/steps/tasks/templates/self-instruct.jinja2) and a simplified version is shown below:
+`SelfInstruct` là một lời nhắc tạo ra các hướng dẫn mới dựa trên tập dữ liệu mẫu. Dữ liệu mẫu này có thể là một hướng dẫn đơn lẻ hoặc một đoạn ngữ cảnh. Quá trình bắt đầu với một nhóm dữ liệu mẫu ban đầu. Mô hình ngôn ngữ sau đó được nhắc để tạo ra các hướng dẫn mới dựa trên dữ liệu mẫu này bằng cách sử dụng phương pháp học trong ngữ cảnh (in-context learning). Lời nhắc được [triển khai trong distilabel](https://github.com/argilla-io/distilabel/blob/main/src/distilabel/steps/tasks/templates/self-instruct.jinja2) và một phiên bản đơn giản hóa được hiển thị bên dưới:
 
 ```
-# Task Description
-Develop {{ num_instructions }} user queries that can be received by the given AI application and applicable to the provided context. Emphasize diversity in verbs and linguistic structures within the model's textual capabilities.
+# Mô tả nhiệm vụ
+Phát triển {{ num_instructions }} truy vấn của người dùng có thể được nhận bởi ứng dụng AI đã cho và áp dụng cho ngữ cảnh được cung cấp. Nhấn mạnh sự đa dạng trong động từ và cấu trúc ngôn ngữ trong khả năng văn bản của mô hình.
 
-# Context
+# Ngữ cảnh
 {{ input }}
 
-# Output
+# Đầu ra
 ```
 
-To use it, we need to pass the `llm` to the [SelfInstruct class](https://distilabel.argilla.io/dev/components-gallery/tasks/selfinstruct/). Let's use the text from the [Prompt to Data section](#prompt-to-data) as context and generate a new instruction.
+Để sử dụng nó, chúng ta cần truyền `llm` cho [lớp SelfInstruct](https://distilabel.argilla.io/dev/components-gallery/tasks/selfinstruct/). Hãy sử dụng văn bản từ [phần Từ lời nhắc đến dữ liệu](#prompt-to-data) làm ngữ cảnh và tạo ra một hướng dẫn mới.
 
 ```python
 from distilabel.steps.tasks import SelfInstruct
@@ -62,31 +62,31 @@ from distilabel.steps.tasks import SelfInstruct
 self_instruct = SelfInstruct(llm=llm)
 self_instruct.load()
 
-context = "<prompt_to_data_section>"
+context = "<prompt_to_data_section>" # Thay thế bằng nội dung của phần Từ lời nhắc đến dữ liệu
 
 next(self_instruct.process([{"input": text}]))["instructions"][0]
-# What is the process of generating synthetic data through manual prompting?
+# Quá trình tạo dữ liệu tổng hợp thông qua việc nhắc nhở thủ công là gì?
 ```
 
-The generated instruction is a lot better already and it fits our actual content and domain. However, we can do even better by improving the prompt through evolution.
+Hướng dẫn được tạo ra đã tốt hơn rất nhiều và nó phù hợp với nội dung và lĩnh vực thực tế của chúng ta. Tuy nhiên, chúng ta có thể làm tốt hơn nữa bằng cách cải thiện lời nhắc thông qua phương pháp tiến hóa (evolution).
 
 ### EvolInstruct
 
-EvolInstruct is a prompting technique that takes an input instruction and evolves it into a better version of the same instruction. This better version is defined according to a set of criteria and adds constraints, deepening, concretizing, reasoning or complications to the original instruction. The process can be repeated multiple times to create various evolutions of the same instruction, ideally leading to a better version of the original instruction. The prompt is [implemented in distilabel](https://github.com/argilla-io/distilabel/tree/main/src/distilabel/steps/tasks/evol_instruct) and a simplified version is shown below:
+EvolInstruct là một kỹ thuật nhắc nhở lấy một hướng dẫn đầu vào và phát triển nó thành một phiên bản tốt hơn của cùng một hướng dẫn. Phiên bản tốt hơn này được định nghĩa theo một tập hợp các tiêu chí và bổ sung các ràng buộc, đào sâu, cụ thể hóa, lập luận hoặc phức tạp hóa cho hướng dẫn ban đầu. Quá trình này có thể được lặp lại nhiều lần để tạo ra các phiên bản tiến hóa khác nhau của cùng một hướng dẫn, lý tưởng nhất là dẫn đến một phiên bản tốt hơn của hướng dẫn ban đầu. Lời nhắc được [triển khai trong distilabel](https://github.com/argilla-io/distilabel/tree/main/src/distilabel/steps/tasks/evol_instruct) và một phiên bản đơn giản hóa được hiển thị bên dưới:
 
 ```
-I want you act as a Prompt Rewriter.
-Given prompt a prompt, rewrite it into a more complex version.
-Complicate the prompt based on the following criteria:
+Tôi muốn bạn đóng vai trò là một Trình viết lại lời nhắc (Prompt Rewriter).
+Cho một lời nhắc, hãy viết lại nó thành một phiên bản phức tạp hơn.
+Phức tạp hóa lời nhắc dựa trên các tiêu chí sau:
 {{ criteria }}
 
-# Prompt
+# Lời nhắc
 {{ input }}
 
-# Output
+# Đầu ra
 ```
 
-To use it, we need to pass the `llm` to the [EvolInstruct class](https://distilabel.argilla.io/dev/components-gallery/tasks/evolinstruct/). Let's use the synthetic prompt from [the SelfInstruct section](#selfinstruct) as input and evolve it into a better version. For this example, we will only evolve for one generation.
+Để sử dụng nó, chúng ta cần truyền `llm` cho [lớp EvolInstruct](https://distilabel.argilla.io/dev/components-gallery/tasks/evolinstruct/). Hãy sử dụng lời nhắc tổng hợp từ [phần SelfInstruct](#selfinstruct) làm đầu vào và phát triển nó thành một phiên bản tốt hơn. Đối với ví dụ này, chúng ta sẽ chỉ tiến hóa trong một thế hệ.
 
 ```python
 from distilabel.steps.tasks import EvolInstruct
@@ -94,34 +94,34 @@ from distilabel.steps.tasks import EvolInstruct
 evol_instruct = EvolInstruct(llm=llm, num_evolutions=1)
 evol_instruct.load()
 
-text = "What is the process of generating synthetic data through manual prompting"
+text = "Quá trình tạo dữ liệu tổng hợp thông qua việc nhắc nhở thủ công là gì"
 
 next(evol_instruct.process([{"instruction": text}]))
-# What is the process of generating synthetic data through manual prompting?
-# And, how does the artificial intelligence system, GPT4, use machine learning algorithms to manipulate the input data into synthetic data?
+# Quá trình tạo dữ liệu tổng hợp thông qua việc nhắc nhở thủ công là gì?
+# Và, làm thế nào hệ thống trí tuệ nhân tạo, GPT4, sử dụng các thuật toán học máy để thao tác dữ liệu đầu vào thành dữ liệu tổng hợp?
 ```
 
-The instruction is now more complex but has lost some of the original meaning. So, take into account that evolving can be a double-edged sword and we need to be careful with the quality of the data we generate.
+Hướng dẫn bây giờ phức tạp hơn nhưng đã mất đi một số ý nghĩa ban đầu. Vì vậy, hãy lưu ý rằng việc tiến hóa có thể là một con dao hai lưỡi và chúng ta cần cẩn thận với chất lượng của dữ liệu chúng ta tạo ra.
 
 ### Magpie
 
-Magpie is a technique that relies on the auto-regressive factors of language model and the [chat-template](../1_instruction_tuning/chat_templates.md) that has been using during the instruction tuning process. As you might remember, the chat-template is a format that structures conversations with clear role indicators (system, user, assistant). During the instruction tuning phase, the language model has been optimized to reproduce this format and that is exactly what magpie takes advantage of. It starts with a pre-query-prompt based on the chat-template but it stops before the user message indicator, e.g. `<|im_start|>user\n`, and then it uses the language model to generate the user prompt until the end of the assistant indicator, e.g. `<|im_end|>`. This approach allows us to generate a lot of data in a very efficient way and it can even be scaled up to multi-turn conversations. It is hypothesized this generated data reproduces training data from the instruction tuning phase of the model used.
+Magpie là một kỹ thuật dựa vào các yếu tố tự suy luận (auto-regressive) của mô hình ngôn ngữ và [mẫu trò chuyện (chat-template)](../1_instruction_tuning/chat_templates.md) đã được sử dụng trong quá trình tinh chỉnh hướng dẫn. Như bạn có thể nhớ, mẫu trò chuyện là một định dạng cấu trúc các cuộc hội thoại với các chỉ số vai trò rõ ràng (hệ thống, người dùng, trợ lý). Trong giai đoạn tinh chỉnh hướng dẫn, mô hình ngôn ngữ đã được tối ưu hóa để tái tạo định dạng này và đó chính xác là những gì `Magpie` tận dụng. Nó bắt đầu với một lời nhắc trước truy vấn (pre-query-prompt) dựa trên mẫu trò chuyện nhưng nó dừng lại trước chỉ báo tin nhắn của người dùng, ví dụ: `<|im_start|>user\n`, và sau đó nó sử dụng mô hình ngôn ngữ để tạo ra lời nhắc của người dùng cho đến khi kết thúc chỉ báo trợ lý, ví dụ: `<|im_end|>`. Cách tiếp cận này cho phép chúng ta tạo ra rất nhiều dữ liệu một cách rất hiệu quả và thậm chí có thể mở rộng quy mô lên các cuộc hội thoại nhiều lượt. Người ta giả thuyết rằng dữ liệu được tạo ra này tái tạo dữ liệu huấn luyện từ giai đoạn tinh chỉnh hướng dẫn của mô hình được sử dụng.
 
-In this scenario, prompt templates differ per model because they are based on the chat-template format. But we can walk through a simplified version of the process step-by-step.
+Trong trường hợp này, các mẫu lời nhắc khác nhau cho mỗi mô hình vì chúng dựa trên định dạng mẫu trò chuyện. Nhưng chúng ta có thể đi qua một phiên bản đơn giản hóa của quá trình từng bước.
 
 ```bash
-# Step 1: provide the pre-query-prompt
+# Bước 1: cung cấp lời nhắc trước truy vấn
 <|im_start|>user\n
 
-# Step 2: the language model generates the user prompt
+# Bước 2: mô hình ngôn ngữ tạo ra lời nhắc của người dùng
 <|im_start|>user\n
-What is the purpose of Smol-Course?
+Mục đích của Khóa học Smol là gì?
 
-# Step 3: stop the generation
+# Bước 3: dừng quá trình tạo
 <|im_end|>
 ```
 
-To use it in distilabel, we need to pass the `llm` to the [Magpie class](https://distilabel.argilla.io/dev/components-gallery/tasks/magpie/).
+Để sử dụng nó trong distilabel, chúng ta cần truyền `llm` cho [lớp Magpie](https://distilabel.argilla.io/dev/components-gallery/tasks/magpie/).
 
 ```python
 from distilabel.steps.tasks import Magpie
@@ -129,35 +129,34 @@ from distilabel.steps.tasks import Magpie
 magpie = Magpie(llm=llm)
 magpie.load()
 
-next(magpie.process([{"system_prompt": "You are a helpful assistant."}]))
+next(magpie.process([{"system_prompt": "Bạn là một trợ lý hữu ích."}]))
 # [{
 #   "role": "user",
-#   "content": "Can you provide me with a list of the top 3 universities?"
+#   "content": "Bạn có thể cung cấp cho tôi danh sách 3 trường đại học hàng đầu không?"
 # },
 # {
 #   "role": "assistant",
-#   "content": "The top 3 universities are: MIT, Yale, Stanford."
+#   "content": "3 trường đại học hàng đầu là: MIT, Yale, Stanford."
 # }]
 ```
 
-
-We immediately get a dataset with a `prompt` and `completion` . To improve the performance on our own domain, we can inject additional context into the `system_prompt`. For the LLM to generate specific domain data in combination with Magpie, it helps describing in the system prompt what the users queries will be. This is then used in the  pre-query-prompt before we start generating the user prompt and bias the LLM to generate user queries of that domain.
-
-```
-You're an AI assistant that will help users solving math problems.
-```
-
-It's important to write the system prompt as shown above instead of something like:
+Chúng ta ngay lập tức nhận được một tập dữ liệu với một `lời nhắc` và `phần hoàn thành`. Để cải thiện hiệu suất trên lĩnh vực của riêng mình, chúng ta có thể đưa thêm ngữ cảnh vào `system_prompt`. Để LLM tạo ra dữ liệu lĩnh vực cụ thể kết hợp với Magpie, nó giúp mô tả trong lời nhắc hệ thống (system prompt) các truy vấn của người dùng sẽ là gì. Điều này sau đó được sử dụng trong lời nhắc trước truy vấn trước khi chúng ta bắt đầu tạo lời nhắc của người dùng và thiên về LLM để tạo ra các truy vấn của người dùng trong lĩnh vực đó.
 
 ```
-You're an AI assistant that generates math problems
+Bạn là một trợ lý AI sẽ giúp người dùng giải các bài toán.
 ```
 
-Generally, language models are less optimized for passing additional context to the `system_prompt` so this does not always work as well for customisation as other techniques.
+Điều quan trọng là phải viết lời nhắc hệ thống như được hiển thị ở trên thay vì một cái gì đó như:
 
-### From Prompts to Pipelines
+```
+Bạn là một trợ lý AI tạo ra các bài toán
+```
 
-The classes we've seen so far are all standalone classes that can be used in a pipeline. This is a good start, but we can do even better by using the `Pipeline` class to generate a dataset. We will use the `TextGeneration` step to generate a synthetic dataset for instruction tuning. The pipeline will consist of a `LoadDataFromDicts` step to load the data, a `TextGeneration` step to generate the `prompt` and a `completion` for that prompt. We will connect the steps and flow the data through the pipeline using the `>>` operator. Within the [documentation of distilabel](https://distilabel.argilla.io/dev/components-gallery/tasks/textgeneration/#input-output-columns) we can see input and output columns of the step. We to ensure that the data flow correctly through the pipeline, we will use the `output_mappings` parameter to map the output columns to the input columns of the next step.
+Nói chung, các mô hình ngôn ngữ ít được tối ưu hóa hơn để truyền ngữ cảnh bổ sung cho `system_prompt` vì vậy điều này không phải lúc nào cũng hoạt động tốt cho việc tùy chỉnh như các kỹ thuật khác.
+
+### Từ lời nhắc đến quy trình (pipeline)
+
+Các lớp chúng ta đã thấy cho đến nay đều là các lớp độc lập có thể được sử dụng trong một quy trình. Đây là một khởi đầu tốt, nhưng chúng ta có thể làm tốt hơn nữa bằng cách sử dụng lớp `Pipeline` để tạo tập dữ liệu. Chúng ta sẽ sử dụng bước `TextGeneration` để tạo tập dữ liệu tổng hợp để tinh chỉnh hướng dẫn. Quy trình sẽ bao gồm bước `LoadDataFromDicts` để tải dữ liệu, bước `TextGeneration` để tạo `lời nhắc` và `phần hoàn thành` cho lời nhắc đó. Chúng ta sẽ kết nối các bước và luồng dữ liệu thông qua quy trình bằng toán tử `>>`. Trong [tài liệu của distilabel](https://distilabel.argilla.io/dev/components-gallery/tasks/textgeneration/#input-output-columns), chúng ta có thể thấy các cột đầu vào và đầu ra của bước. Để đảm bảo rằng dữ liệu chảy chính xác qua quy trình, chúng ta sẽ sử dụng tham số `output_mappings` để ánh xạ các cột đầu ra với các cột đầu vào của bước tiếp theo.
 
 ```python
 from distilabel.llms import TransformersLLM
@@ -166,7 +165,7 @@ from distilabel.steps import LoadDataFromDicts
 from distilabel.steps.tasks import TextGeneration
 
 with Pipeline() as pipeline:
-    data = LoadDataFromDicts(data=[{"instruction": "Generate a short question about the Hugging Face Smol-Course."}])
+    data = LoadDataFromDicts(data=[{"instruction": "Tạo một câu hỏi ngắn về Khóa học Smol của Hugging Face."}])
     llm = TransformersLLM(model="HuggingFaceTB/SmolLM2-1.7B-Instruct")
     gen_a = TextGeneration(llm=llm, output_mappings={"generation": "instruction"})
     gen_b = TextGeneration(llm=llm, output_mappings={"generation": "response"})
@@ -176,29 +175,29 @@ if __name__ == "__main__":
     distiset = pipeline.run(use_cache=False)
     print(distiset["default"]["train"][0])
 # [{
-#   "instruction": "What is the purpose of Smol-Course?",
-#   "response": "The Smol-Course is a platform designed to learning computer science concepts."
+#   "instruction": "Mục đích của Khóa học Smol là gì?",
+#   "response": "Khóa học Smol là một nền tảng được thiết kế để học các khái niệm khoa học máy tính."
 # }]
 ```
 
-Under the hood, this pipeline has a lot of cool features. It automatically caches generation results, so we can don't have to re-run the generation steps. There is included fault-tolerance, so if the generation steps fail, the pipeline will continue to run. And the pipeline exexutes all generation steps in parallel, so the generation is faster. We can even visualise the pipeline using the `draw` method. Here you can see how the data flows through the pipeline and how the `output_mappings` are used to map the output columns to the input columns of the next step.
+Bên dưới, quy trình này có rất nhiều tính năng hay. Nó tự động lưu trữ các kết quả tạo, vì vậy chúng ta không phải chạy lại các bước tạo. Thư viện có tích hợp khả năng xử lý lỗi (fault-tolerance), vì vậy nếu các bước tạo thất bại, quy trình vẫn sẽ tiếp tục chạy. Và quy trình thực hiện tất cả các bước tạo song song, vì vậy việc tạo nhanh hơn. Chúng ta thậm chí có thể trực quan hóa quy trình bằng phương thức `draw`. Ở đây bạn có thể thấy cách dữ liệu chảy qua quy trình và cách `output_mappings` được sử dụng để ánh xạ các cột đầu ra với các cột đầu vào của bước tiếp theo.
 
 ![Pipeline](./images/pipeline.png)
 
-## Best Practices
+## Các phương pháp hay nhất
 
-- Ensure you have a diverse seed data to cover a wide range of scenarios
-- Regularly evaluate the dataset to ensure generated data is diverse and of high quality
-- Iterate on the (system)prompt to improve the quality of the data
+- Đảm bảo bạn có dữ liệu hạt giống đa dạng để bao quát nhiều tình huống
+- Thường xuyên đánh giá tập dữ liệu để đảm bảo dữ liệu được tạo ra đa dạng và có chất lượng cao
+- Lặp lại trên (system)prompt để cải thiện chất lượng của dữ liệu
 
-## Next Steps
+## Các bước tiếp theo
 
-👨🏽‍💻 Code -[Exercise Notebook](./notebooks/instruction_sft_dataset.ipynb) to generate a dataset for instruction tuning
-🧑‍🏫 Learn - About [generating preference datasets](./preference_datasets.md)
+👨🏽‍💻 Lập trình -[Notebook bài tập](./notebooks/instruction_sft_dataset.ipynb) để tạo tập dữ liệu để tinh chỉnh hướng dẫn
+🧑‍🏫 Tìm hiểu - Về [tạo tập dữ liệu sở thích](./preference_datasets.md)
 
-## References
+## Tài liệu tham khảo
 
-- [Distilabel Documentation](https://distilabel.argilla.io/latest/)
+- [Tài liệu Distilabel](https://distilabel.argilla.io/latest/)
 - [Self-instruct](https://arxiv.org/abs/2212.10560)
 - [Evol-Instruct](https://arxiv.org/abs/2304.12244)
 - [Magpie](https://arxiv.org/abs/2406.08464)
